@@ -61,8 +61,6 @@
     {
       crack_100ph_disp = crack_10ps_disp = crack_10kps_disp = crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = guesses = 0
     }
-    console.log(result);
-    console.log(warning);
   }
 
   function hide (elements) {
@@ -97,6 +95,13 @@ function show (elements) {
       elementForSuggestion.innerText = element;
       suggestionsContainer.appendChild(elementForSuggestion);
     });
+  }
+
+  function back() {
+    document.getElementById("input").value = "";
+    hide(document.querySelectorAll('.password-score'));
+    show(document.querySelectorAll('.password-input'));
+    document.getElementById("suggestionsList").innerHTML = "";
   }
 </script>
 
@@ -264,13 +269,13 @@ function show (elements) {
 </style>
 
 <main>
-
   <form class="password-input" on:submit|preventDefault={strengthScore}>
 
     <div class="field">
       <input
         type={showPassword ? 'text' : 'password'}
         name="password"
+        id="input"
         class="input"
         placeholder="
         "
@@ -335,6 +340,6 @@ function show (elements) {
       <h2>Sequences</h2>
       <p>(coming soon!)</p>
     </div>
+    <button on:click={back}>Go back</button>
   </div>
-
 </main>
