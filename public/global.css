@@ -79,7 +79,7 @@ button:focus {
 	padding-right: 20px;
 }
 .no-feedback-box {
-	border: 1px solid greenyellow;
+	border: 1px solid green;
 	border-radius: 12px;
 	padding-left: 20px;
 	padding-right: 20px;

@@ -2,12 +2,13 @@
   import zxcvbn from 'zxcvbn';
   import prettyNum, {ROUNDING_MODE} from 'pretty-num';
 
+  let password = "";
   let showPassword = false;
   let no_feedback, pretty_guesses, letters, warning, spec_characters, numbers, strength_text, protection, length, spaces, strength, crack_100ph_disp, crack_10ps_disp, crack_10kps_disp, crack_10bps_disp, crack_100ph_sec, crack_10ps_sec, crack_10kps_sec, crack_10bps_sec, guesses = 0
   let suggestions = [] 
 
   function validatePassword(e) {
-    const password = e.target.value;
+    password = e.target.value;
 
     let result = zxcvbn(password);
     strength = result.score;
@@ -33,7 +34,7 @@
     }
 
     if (warning == "" && suggestions.length == 0) {
-      no_feedback = "There is no feedback for your password as it is secure enough. Just remember not to use duplicate passwords and change them if you think your account has been hacked."
+      no_feedback = "There is no feedback for your password as it is secure enough."
     }
 
     if (strength == 0)
@@ -336,6 +337,13 @@ function show (elements) {
   </form>
 
   <div class="password-score" style="display: none">
+    <div class="password-text">
+      <h2>Password</h2>
+      <p on:mouseenter={() => (showPassword = true)} on:mouseleave={() => (showPassword = false)} on:pointerenter={() => (showPassword = true)} on:pointerleave={() => (showPassword = false)}>
+        {showPassword ? password : '(hover/click to see)'}
+      </p>
+    </div>
+
     <div class="rating">
       <h2>Rating</h2>
       <p>Your password was rated <strong>{strength}</strong>/4.</p>
@@ -362,7 +370,7 @@ function show (elements) {
 
     {#if suggestions.length != 0}
       <div id="suggestions" class="suggestions">
-        <h2>Suggestions</h2>
+        <h2>Feedback</h2>
         <div id="suggestionsList" class="suggestionsList">
         </div>
       </div>
