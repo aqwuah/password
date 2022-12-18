@@ -338,9 +338,9 @@ function show (elements) {
 
   <div class="password-score" style="display: none">
     <div class="password-text">
-      <h2>Password</h2>
+      <h1>Results</h1>
       <p on:mouseenter={() => (showPassword = true)} on:mouseleave={() => (showPassword = false)} on:pointerenter={() => (showPassword = true)} on:pointerleave={() => (showPassword = false)}>
-        {showPassword ? password : '(hover/click to see)'}
+        {showPassword ? password : '(hover/click to see password)'}
       </p>
     </div>
 

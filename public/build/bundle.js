@@ -2433,12 +2433,12 @@ var app = (function () {
     			div0 = element("div");
     			p = element("p");
     			t2 = text(/*no_feedback*/ ctx[2]);
-    			add_location(h2, file, 354, 8, 10190);
-    			add_location(p, file, 356, 10, 10256);
+    			add_location(h2, file, 354, 8, 10198);
+    			add_location(p, file, 356, 10, 10264);
     			attr_dev(div0, "class", "no-feedback-box");
-    			add_location(div0, file, 355, 8, 10216);
+    			add_location(div0, file, 355, 8, 10224);
     			attr_dev(div1, "class", "no-feedback");
-    			add_location(div1, file, 353, 6, 10156);
+    			add_location(div1, file, 353, 6, 10164);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -2485,12 +2485,12 @@ var app = (function () {
     			div0 = element("div");
     			p = element("p");
     			t2 = text(/*warning*/ ctx[5]);
-    			add_location(h2, file, 363, 8, 10376);
-    			add_location(p, file, 365, 10, 10437);
+    			add_location(h2, file, 363, 8, 10384);
+    			add_location(p, file, 365, 10, 10445);
     			attr_dev(div0, "class", "warningList");
-    			add_location(div0, file, 364, 8, 10401);
+    			add_location(div0, file, 364, 8, 10409);
     			attr_dev(div1, "class", "warning");
-    			add_location(div1, file, 362, 6, 10346);
+    			add_location(div1, file, 362, 6, 10354);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -2533,13 +2533,13 @@ var app = (function () {
     			h2.textContent = "Feedback";
     			t1 = space();
     			div0 = element("div");
-    			add_location(h2, file, 372, 8, 10584);
+    			add_location(h2, file, 372, 8, 10592);
     			attr_dev(div0, "id", "suggestionsList");
     			attr_dev(div0, "class", "suggestionsList");
-    			add_location(div0, file, 373, 8, 10610);
+    			add_location(div0, file, 373, 8, 10618);
     			attr_dev(div1, "id", "suggestions");
     			attr_dev(div1, "class", "suggestions");
-    			add_location(div1, file, 371, 6, 10533);
+    			add_location(div1, file, 371, 6, 10541);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -2650,18 +2650,18 @@ var app = (function () {
     	let t42;
     	let div8;
     	let div3;
-    	let h22;
+    	let h1;
     	let t44;
     	let p0;
 
     	let t45_value = (/*showPassword*/ ctx[1]
     	? /*password*/ ctx[0]
-    	: '(hover/click to see)') + "";
+    	: '(hover/click to see password)') + "";
 
     	let t45;
     	let t46;
     	let div4;
-    	let h23;
+    	let h22;
     	let t48;
     	let p1;
     	let t49;
@@ -2678,7 +2678,7 @@ var app = (function () {
     	let t58;
     	let t59;
     	let div5;
-    	let h24;
+    	let h23;
     	let t61;
     	let p3;
     	let t62;
@@ -2720,7 +2720,7 @@ var app = (function () {
     	let t86;
     	let t87;
     	let div6;
-    	let h25;
+    	let h24;
     	let t89;
     	let p6;
     	let t90;
@@ -2747,7 +2747,7 @@ var app = (function () {
     	let t100;
     	let t101;
     	let div7;
-    	let h26;
+    	let h25;
     	let t103;
     	let p10;
     	let t105;
@@ -2832,15 +2832,15 @@ var app = (function () {
     			t42 = space();
     			div8 = element("div");
     			div3 = element("div");
-    			h22 = element("h2");
-    			h22.textContent = "Password";
+    			h1 = element("h1");
+    			h1.textContent = "Results";
     			t44 = space();
     			p0 = element("p");
     			t45 = text(t45_value);
     			t46 = space();
     			div4 = element("div");
-    			h23 = element("h2");
-    			h23.textContent = "Rating";
+    			h22 = element("h2");
+    			h22.textContent = "Rating";
     			t48 = space();
     			p1 = element("p");
     			t49 = text("Your password was rated ");
@@ -2860,8 +2860,8 @@ var app = (function () {
     			if (if_block2) if_block2.c();
     			t59 = space();
     			div5 = element("div");
-    			h24 = element("h2");
-    			h24.textContent = "Stats";
+    			h23 = element("h2");
+    			h23.textContent = "Stats";
     			t61 = space();
     			p3 = element("p");
     			t62 = text("Your password is ");
@@ -2895,8 +2895,8 @@ var app = (function () {
     			t86 = text(" guesses to crack your password.");
     			t87 = space();
     			div6 = element("div");
-    			h25 = element("h2");
-    			h25.textContent = "Crack Times";
+    			h24 = element("h2");
+    			h24.textContent = "Crack Times";
     			t89 = space();
     			p6 = element("p");
     			t90 = text("Online attack with a ratelimit: ");
@@ -2919,8 +2919,8 @@ var app = (function () {
     			t100 = text(t100_value);
     			t101 = space();
     			div7 = element("div");
-    			h26 = element("h2");
-    			h26.textContent = "Sequences";
+    			h25 = element("h2");
+    			h25.textContent = "Sequences";
     			t103 = space();
     			p10 = element("p");
     			p10.textContent = "(coming soon!)";
@@ -2982,41 +2982,41 @@ var app = (function () {
     			add_location(button0, file, 334, 4, 9460);
     			attr_dev(form, "class", "password-input svelte-119nxo0");
     			add_location(form, file, 286, 2, 7432);
-    			add_location(h22, file, 340, 6, 9638);
-    			add_location(p0, file, 341, 6, 9662);
+    			add_location(h1, file, 340, 6, 9638);
+    			add_location(p0, file, 341, 6, 9661);
     			attr_dev(div3, "class", "password-text");
     			add_location(div3, file, 339, 4, 9604);
-    			add_location(h23, file, 347, 6, 9961);
-    			add_location(strong, file, 348, 33, 10010);
-    			add_location(p1, file, 348, 6, 9983);
-    			add_location(p2, file, 349, 6, 10051);
+    			add_location(h22, file, 347, 6, 9969);
+    			add_location(strong, file, 348, 33, 10018);
+    			add_location(p1, file, 348, 6, 9991);
+    			add_location(p2, file, 349, 6, 10059);
     			attr_dev(div4, "class", "rating");
-    			add_location(div4, file, 346, 4, 9934);
-    			add_location(h24, file, 379, 6, 10730);
-    			add_location(u0, file, 380, 26, 10771);
-    			add_location(p3, file, 380, 6, 10751);
-    			add_location(p4, file, 381, 6, 10814);
-    			add_location(u1, file, 382, 37, 11103);
-    			add_location(p5, file, 382, 6, 11072);
+    			add_location(div4, file, 346, 4, 9942);
+    			add_location(h23, file, 379, 6, 10738);
+    			add_location(u0, file, 380, 26, 10779);
+    			add_location(p3, file, 380, 6, 10759);
+    			add_location(p4, file, 381, 6, 10822);
+    			add_location(u1, file, 382, 37, 11111);
+    			add_location(p5, file, 382, 6, 11080);
     			attr_dev(div5, "class", "stats");
-    			add_location(div5, file, 378, 4, 10704);
-    			add_location(h25, file, 386, 6, 11210);
-    			add_location(u2, file, 387, 41, 11272);
-    			add_location(p6, file, 387, 6, 11237);
-    			add_location(u3, file, 388, 44, 11353);
-    			add_location(p7, file, 388, 6, 11315);
-    			add_location(u4, file, 389, 51, 11440);
-    			add_location(p8, file, 389, 6, 11395);
-    			add_location(u5, file, 390, 51, 11528);
-    			add_location(p9, file, 390, 6, 11483);
+    			add_location(div5, file, 378, 4, 10712);
+    			add_location(h24, file, 386, 6, 11218);
+    			add_location(u2, file, 387, 41, 11280);
+    			add_location(p6, file, 387, 6, 11245);
+    			add_location(u3, file, 388, 44, 11361);
+    			add_location(p7, file, 388, 6, 11323);
+    			add_location(u4, file, 389, 51, 11448);
+    			add_location(p8, file, 389, 6, 11403);
+    			add_location(u5, file, 390, 51, 11536);
+    			add_location(p9, file, 390, 6, 11491);
     			attr_dev(div6, "class", "crackTimes");
-    			add_location(div6, file, 385, 4, 11179);
-    			add_location(h26, file, 394, 6, 11611);
-    			add_location(p10, file, 395, 6, 11636);
+    			add_location(div6, file, 385, 4, 11187);
+    			add_location(h25, file, 394, 6, 11619);
+    			add_location(p10, file, 395, 6, 11644);
     			attr_dev(div7, "class", "sequences");
-    			add_location(div7, file, 393, 4, 11581);
+    			add_location(div7, file, 393, 4, 11589);
     			attr_dev(button1, "class", "svelte-119nxo0");
-    			add_location(button1, file, 398, 4, 11674);
+    			add_location(button1, file, 398, 4, 11682);
     			attr_dev(div8, "class", "password-score");
     			set_style(div8, "display", "none");
     			add_location(div8, file, 338, 2, 9549);
@@ -3096,13 +3096,13 @@ var app = (function () {
     			append_dev(main, t42);
     			append_dev(main, div8);
     			append_dev(div8, div3);
-    			append_dev(div3, h22);
+    			append_dev(div3, h1);
     			append_dev(div3, t44);
     			append_dev(div3, p0);
     			append_dev(p0, t45);
     			append_dev(div8, t46);
     			append_dev(div8, div4);
-    			append_dev(div4, h23);
+    			append_dev(div4, h22);
     			append_dev(div4, t48);
     			append_dev(div4, p1);
     			append_dev(p1, t49);
@@ -3122,7 +3122,7 @@ var app = (function () {
     			if (if_block2) if_block2.m(div8, null);
     			append_dev(div8, t59);
     			append_dev(div8, div5);
-    			append_dev(div5, h24);
+    			append_dev(div5, h23);
     			append_dev(div5, t61);
     			append_dev(div5, p3);
     			append_dev(p3, t62);
@@ -3156,7 +3156,7 @@ var app = (function () {
     			append_dev(p5, t86);
     			append_dev(div8, t87);
     			append_dev(div8, div6);
-    			append_dev(div6, h25);
+    			append_dev(div6, h24);
     			append_dev(div6, t89);
     			append_dev(div6, p6);
     			append_dev(p6, t90);
@@ -3179,7 +3179,7 @@ var app = (function () {
     			append_dev(u5, t100);
     			append_dev(div8, t101);
     			append_dev(div8, div7);
-    			append_dev(div7, h26);
+    			append_dev(div7, h25);
     			append_dev(div7, t103);
     			append_dev(div7, p10);
     			append_dev(div8, t105);
@@ -3247,7 +3247,7 @@ var app = (function () {
 
     			if (dirty[0] & /*showPassword, password*/ 3 && t45_value !== (t45_value = (/*showPassword*/ ctx[1]
     			? /*password*/ ctx[0]
-    			: '(hover/click to see)') + "")) set_data_dev(t45, t45_value);
+    			: '(hover/click to see password)') + "")) set_data_dev(t45, t45_value);
 
     			if (dirty[0] & /*strength*/ 4096) set_data_dev(t50, /*strength*/ ctx[12]);
     			if (dirty[0] & /*strength_text*/ 256) set_data_dev(t53, /*strength_text*/ ctx[8]);
