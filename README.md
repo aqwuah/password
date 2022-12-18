@@ -4,7 +4,7 @@ A password strength checker with some nice looking CSS animations made using sve
 ### Features
 - Sleak, dark mode design with an aqua tint.
 - Uses data from the top 30k passwords, common names, popular English words from Wikipedia and TV/movies.
-    - Recognises common words changes score dynamically.
+    - Recognises common words and changes score dynamically.
 - Recognises dates, repeats, sequences, keyboard patterns and 133t3r sp3@k.
 - Password rating out of 4 with dynamically updating (colourful) indicator.
 - Length of password, with letter, number, special character and spaces counts.
