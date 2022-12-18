@@ -3,7 +3,7 @@
   import prettyNum, {ROUNDING_MODE} from 'pretty-num';
 
   let showPassword = false;
-  let pretty_guesses, letters, warning, spec_characters, numbers, strength_text, protection, length, spaces, strength, crack_100ph_disp, crack_10ps_disp, crack_10kps_disp, crack_10bps_disp, crack_100ph_sec, crack_10ps_sec, crack_10kps_sec, crack_10bps_sec, guesses = 0
+  let no_feedback, pretty_guesses, letters, warning, spec_characters, numbers, strength_text, protection, length, spaces, strength, crack_100ph_disp, crack_10ps_disp, crack_10kps_disp, crack_10bps_disp, crack_100ph_sec, crack_10ps_sec, crack_10kps_sec, crack_10bps_sec, guesses = 0
   let suggestions = [] 
 
   function validatePassword(e) {
@@ -19,6 +19,22 @@
     warning = result.feedback.warning;
     suggestions.length = 0;
     suggestions = result.feedback.suggestions;
+
+    if (warning != "") {
+      if (warning.slice(-1) != ".") {
+        warning = warning + ".";
+      }
+    }
+
+    for (var i = 0; i < suggestions.length; i++) {
+      if (suggestions[i].slice(-1) != ".") {
+        suggestions[i] = suggestions[i]+".";
+      }
+    }
+
+    if (warning == "" && suggestions.length == 0) {
+      no_feedback = "There is no feedback for your password as it is secure enough. Just remember not to use duplicate passwords and change them if you think your account has been hacked."
+    }
 
     if (strength == 0)
     {
@@ -326,6 +342,15 @@ function show (elements) {
       <p>{strength_text} {protection}</p>
     </div>
 
+    {#if warning == "" && suggestions.length == 0}
+      <div class="no-feedback">
+        <h2>Feedback</h2>
+        <div class="no-feedback-box">
+          <p>{no_feedback}</p>
+        </div>
+      </div>
+    {/if}
+
     {#if warning != ""}
       <div class="warning">
         <h2>Warning</h2>
@@ -345,13 +370,17 @@ function show (elements) {
 
     <div class="stats">
       <h2>Stats</h2>
-      <p>Your password is {length} characters long.</p>
+      <p>Your password is <u>{length}</u> characters long.</p>
       <p>It contains {letters} {letters == 1 ? "letter" : "letters"}, {numbers} {numbers == 1 ? "number" : "numbers"}, {spec_characters} {spec_characters == 1 ? "special character" : "special characters"} and {spaces} {spaces == 1 ? "space" : "spaces"}.</p>
-      <p>It would take approximately {pretty_guesses} guesses to crack your password.</p>
+      <p>It would take approximately <u>{pretty_guesses}</u> guesses to crack your password.</p>
     </div>
 
     <div class="crackTimes">
       <h2>Crack Times</h2>
+      <p>Online attack with a ratelimit: <u>{crack_100ph_disp || "0"}</u></p>
+      <p>Online attack without a ratelimit: <u>{crack_10ps_disp || "0"}</u></p>
+      <p>Offline attack with slow hashing (10K/s): <u>{crack_10kps_disp || "0"}</u></p>
+      <p>Offline attack with fast hashing (10B/s): <u>{crack_10bps_disp || "0"}</u></p>
     </div>
 
     <div class="sequences">
