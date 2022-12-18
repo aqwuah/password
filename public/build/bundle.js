@@ -2282,84 +2282,84 @@ var app = (function () {
     			attr_dev(input, "class", "input svelte-119nxo0");
     			attr_dev(input, "placeholder", "\n        ");
     			toggle_class(input, "valid", /*strength*/ ctx[9] > 3);
-    			add_location(input, file, 274, 6, 6814);
+    			add_location(input, file, 276, 6, 7040);
     			attr_dev(label, "for", "password");
     			attr_dev(label, "class", "label svelte-119nxo0");
-    			add_location(label, file, 283, 6, 7048);
+    			add_location(label, file, 285, 6, 7274);
     			attr_dev(span0, "class", "toggle-password svelte-119nxo0");
-    			add_location(span0, file, 284, 6, 7107);
+    			add_location(span0, file, 286, 6, 7333);
     			attr_dev(div0, "class", "field svelte-119nxo0");
-    			add_location(div0, file, 273, 4, 6788);
+    			add_location(div0, file, 275, 4, 7014);
     			attr_dev(span1, "class", "bar bar-1 svelte-119nxo0");
     			toggle_class(span1, "bar-show", /*strength*/ ctx[9] > 0);
-    			add_location(span1, file, 292, 6, 7347);
+    			add_location(span1, file, 296, 6, 7674);
     			attr_dev(span2, "class", "bar bar-2 svelte-119nxo0");
     			toggle_class(span2, "bar-show", /*strength*/ ctx[9] > 1);
-    			add_location(span2, file, 293, 6, 7410);
+    			add_location(span2, file, 297, 6, 7737);
     			attr_dev(span3, "class", "bar bar-3 svelte-119nxo0");
     			toggle_class(span3, "bar-show", /*strength*/ ctx[9] > 2);
-    			add_location(span3, file, 294, 6, 7473);
+    			add_location(span3, file, 298, 6, 7800);
     			attr_dev(span4, "class", "bar bar-4 svelte-119nxo0");
     			toggle_class(span4, "bar-show", /*strength*/ ctx[9] > 3);
-    			add_location(span4, file, 295, 6, 7536);
+    			add_location(span4, file, 299, 6, 7863);
     			attr_dev(div1, "class", "strength svelte-119nxo0");
-    			add_location(div1, file, 291, 4, 7318);
-    			add_location(h20, file, 299, 12, 7626);
-    			add_location(li0, file, 299, 8, 7622);
-    			add_location(li1, file, 300, 8, 7672);
-    			add_location(li2, file, 301, 8, 7715);
-    			add_location(li3, file, 302, 8, 7758);
-    			add_location(li4, file, 303, 8, 7799);
+    			add_location(div1, file, 295, 4, 7645);
+    			add_location(h20, file, 303, 12, 7953);
+    			add_location(li0, file, 303, 8, 7949);
+    			add_location(li1, file, 304, 8, 7999);
+    			add_location(li2, file, 305, 8, 8042);
+    			add_location(li3, file, 306, 8, 8085);
+    			add_location(li4, file, 307, 8, 8126);
     			attr_dev(ul0, "class", "svelte-119nxo0");
-    			add_location(ul0, file, 298, 4, 7609);
-    			add_location(h21, file, 307, 6, 7902);
-    			add_location(h4, file, 308, 6, 7931);
+    			add_location(ul0, file, 302, 4, 7936);
+    			add_location(h21, file, 311, 6, 8229);
+    			add_location(h4, file, 312, 6, 8258);
     			attr_dev(li5, "title", li5_title_value = "Online attack on a service that ratelimits password auth attempts.");
-    			add_location(li5, file, 310, 8, 7977);
+    			add_location(li5, file, 314, 8, 8304);
     			attr_dev(li6, "title", li6_title_value = "Online attack on a service that doesn't ratelimit, or where an attacker has outsmarted ratelimiting.");
-    			add_location(li6, file, 311, 8, 8110);
+    			add_location(li6, file, 315, 8, 8437);
     			attr_dev(li7, "title", li7_title_value = "Offline attack with multiple attackers, proper salting, and a slow hash function with a moderate work factor.");
-    			add_location(li7, file, 312, 8, 8276);
+    			add_location(li7, file, 316, 8, 8603);
     			attr_dev(li8, "title", li8_title_value = "Offline attack with multiple attackers, salting + fast hashing at about 10 billion/second.");
-    			add_location(li8, file, 313, 8, 8453);
+    			add_location(li8, file, 317, 8, 8780);
     			attr_dev(ul1, "class", "svelte-119nxo0");
-    			add_location(ul1, file, 309, 6, 7964);
+    			add_location(ul1, file, 313, 6, 8291);
     			attr_dev(div2, "class", "strength-text svelte-119nxo0");
-    			add_location(div2, file, 306, 4, 7868);
+    			add_location(div2, file, 310, 4, 8195);
     			button0.disabled = button0_disabled_value = /*strength*/ ctx[9] == null || /*length*/ ctx[7] == 0;
     			attr_dev(button0, "class", "svelte-119nxo0");
-    			add_location(button0, file, 317, 4, 8631);
+    			add_location(button0, file, 321, 4, 8958);
     			attr_dev(form, "class", "password-input svelte-119nxo0");
-    			add_location(form, file, 271, 2, 6712);
-    			add_location(h22, file, 323, 6, 8802);
-    			add_location(strong, file, 324, 33, 8851);
-    			add_location(p0, file, 324, 6, 8824);
-    			add_location(p1, file, 325, 6, 8892);
+    			add_location(form, file, 273, 2, 6938);
+    			add_location(h22, file, 327, 6, 9129);
+    			add_location(strong, file, 328, 33, 9178);
+    			add_location(p0, file, 328, 6, 9151);
+    			add_location(p1, file, 329, 6, 9219);
     			attr_dev(div3, "class", "rating");
-    			add_location(div3, file, 322, 4, 8775);
-    			add_location(h23, file, 328, 6, 8971);
-    			add_location(p2, file, 330, 8, 9028);
+    			add_location(div3, file, 326, 4, 9102);
+    			add_location(h23, file, 332, 6, 9298);
+    			add_location(p2, file, 334, 8, 9355);
     			attr_dev(div4, "class", "warningList");
-    			add_location(div4, file, 329, 6, 8994);
+    			add_location(div4, file, 333, 6, 9321);
     			attr_dev(div5, "class", "warning");
-    			add_location(div5, file, 327, 4, 8943);
-    			add_location(h24, file, 334, 6, 9122);
+    			add_location(div5, file, 331, 4, 9270);
+    			add_location(h24, file, 338, 6, 9449);
     			attr_dev(div6, "id", "suggestionsList");
     			attr_dev(div6, "class", "suggestionsList");
-    			add_location(div6, file, 335, 6, 9149);
+    			add_location(div6, file, 339, 6, 9476);
     			attr_dev(div7, "id", "suggestions");
     			attr_dev(div7, "class", "suggestions");
-    			add_location(div7, file, 333, 4, 9073);
-    			add_location(h25, file, 339, 6, 9258);
-    			add_location(p3, file, 340, 6, 9283);
+    			add_location(div7, file, 337, 4, 9400);
+    			add_location(h25, file, 343, 6, 9585);
+    			add_location(p3, file, 344, 6, 9610);
     			attr_dev(div8, "class", "sequences");
-    			add_location(div8, file, 338, 4, 9228);
+    			add_location(div8, file, 342, 4, 9555);
     			attr_dev(button1, "class", "svelte-119nxo0");
-    			add_location(button1, file, 342, 4, 9320);
+    			add_location(button1, file, 346, 4, 9647);
     			attr_dev(div9, "class", "password-score");
     			set_style(div9, "display", "none");
-    			add_location(div9, file, 321, 2, 8720);
-    			add_location(main, file, 270, 0, 6703);
+    			add_location(div9, file, 325, 2, 9047);
+    			add_location(main, file, 272, 0, 6929);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2470,10 +2470,12 @@ var app = (function () {
     			if (!mounted) {
     				dispose = [
     					listen_dev(input, "input", /*validatePassword*/ ctx[15], false, false, false),
-    					listen_dev(span0, "mouseenter", /*mouseenter_handler*/ ctx[17], false, false, false),
-    					listen_dev(span0, "mouseleave", /*mouseleave_handler*/ ctx[18], false, false, false),
+    					listen_dev(span0, "mouseenter", /*mouseenter_handler*/ ctx[18], false, false, false),
+    					listen_dev(span0, "mouseleave", /*mouseleave_handler*/ ctx[19], false, false, false),
+    					listen_dev(span0, "mousedown", /*mousedown_handler*/ ctx[20], false, false, false),
+    					listen_dev(span0, "mouseup", /*mouseup_handler*/ ctx[21], false, false, false),
     					listen_dev(form, "submit", prevent_default(/*strengthScore*/ ctx[16]), false, true, false),
-    					listen_dev(button1, "click", back, false, false, false)
+    					listen_dev(button1, "click", /*back*/ ctx[17], false, false, false)
     				];
 
     				mounted = true;
@@ -2560,13 +2562,6 @@ var app = (function () {
     	for (var index = 0; index < elements.length; index++) {
     		elements[index].style.display = 'block';
     	}
-    }
-
-    function back() {
-    	document.getElementById("input").value = "";
-    	hide(document.querySelectorAll('.password-score'));
-    	show(document.querySelectorAll('.password-input'));
-    	document.getElementById("suggestionsList").innerHTML = "";
     }
 
     function instance($$self, $$props, $$invalidate) {
@@ -2661,6 +2656,15 @@ var app = (function () {
     		});
     	}
 
+    	function back() {
+    		document.getElementById("input").value = "";
+    		hide(document.querySelectorAll('.password-score'));
+    		show(document.querySelectorAll('.password-input'));
+    		document.getElementById("suggestionsList").innerHTML = "";
+    		$$invalidate(7, length = $$invalidate(1, letters = $$invalidate(4, numbers = $$invalidate(8, spaces = $$invalidate(3, spec_characters = 0)))));
+    		$$invalidate(10, crack_100ph_disp = $$invalidate(11, crack_10ps_disp = $$invalidate(12, crack_10kps_disp = $$invalidate(13, crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = $$invalidate(14, guesses = 0)))));
+    	}
+
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
@@ -2669,6 +2673,8 @@ var app = (function () {
 
     	const mouseenter_handler = () => $$invalidate(0, showPassword = true);
     	const mouseleave_handler = () => $$invalidate(0, showPassword = false);
+    	const mousedown_handler = () => $$invalidate(0, showPassword = true);
+    	const mouseup_handler = () => $$invalidate(0, showPassword = false);
 
     	$$self.$capture_state = () => ({
     		zxcvbn: main,
@@ -2744,8 +2750,11 @@ var app = (function () {
     		guesses,
     		validatePassword,
     		strengthScore,
+    		back,
     		mouseenter_handler,
-    		mouseleave_handler
+    		mouseleave_handler,
+    		mousedown_handler,
+    		mouseup_handler
     	];
     }
 

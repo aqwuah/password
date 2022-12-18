@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@types/zxcvbn": "^4.4.1",
+    "pretty-num": "^0.5.2",
     "sirv-cli": "^0.4.4",
     "zxcvbn": "^4.4.2"
   }

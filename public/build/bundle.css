@@ -39,10 +39,10 @@ h1.svelte-vyb12m{
     transition:border 500ms
 }
 .input.svelte-119nxo0.svelte-119nxo0:valid{
-    color:yellowgreen
+    color:white;
 }
 .input.svelte-119nxo0.svelte-119nxo0:invalid{
-    color:orangered
+    color:white;
 }
 .field.svelte-119nxo0.svelte-119nxo0::after{
     content:"";
@@ -91,16 +91,16 @@ h1.svelte-vyb12m{
     box-shadow:none
 }
 .bar-1.svelte-119nxo0.svelte-119nxo0{
-    background:linear-gradient(to right, red, orangered)
+    background:linear-gradient(to right, red, rgb(206, 102, 5))
 }
 .bar-2.svelte-119nxo0.svelte-119nxo0{
-    background:linear-gradient(to right, orangered, yellow)
+    background:linear-gradient(to right, rgb(206, 102, 5), rgb(255, 238, 0))
 }
 .bar-3.svelte-119nxo0.svelte-119nxo0{
-    background:linear-gradient(to right, yellow, yellowgreen)
+    background:linear-gradient(to right, rgb(255, 238, 0), rgb(1, 166, 1))
 }
 .bar-4.svelte-119nxo0.svelte-119nxo0{
-    background:linear-gradient(to right, yellowgreen, green)
+    background:linear-gradient(to right, rgb(1, 166, 1), rgb(0, 51, 0))
 }
 .bar.svelte-119nxo0.svelte-119nxo0:last-child{
     margin-right:0

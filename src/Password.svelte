@@ -102,6 +102,8 @@ function show (elements) {
     hide(document.querySelectorAll('.password-score'));
     show(document.querySelectorAll('.password-input'));
     document.getElementById("suggestionsList").innerHTML = "";
+    length =  letters = numbers = spaces = spec_characters = 0;
+    crack_100ph_disp = crack_10ps_disp = crack_10kps_disp = crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = guesses = 0
   }
 </script>
 
@@ -285,7 +287,9 @@ function show (elements) {
       <span
         class="toggle-password"
         on:mouseenter={() => (showPassword = true)}
-        on:mouseleave={() => (showPassword = false)}>
+        on:mouseleave={() => (showPassword = false)}
+        on:mousedown={() => (showPassword = true)}
+        on:mouseup={() => (showPassword = false)}>
         {showPassword ? '🙈' : '👁️'}
       </span>
     </div>
