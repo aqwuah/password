@@ -197,6 +197,12 @@ var app = (function () {
             callback();
         }
     }
+
+    const globals = (typeof window !== 'undefined'
+        ? window
+        : typeof globalThis !== 'undefined'
+            ? globalThis
+            : global);
     function create_component(block) {
         block && block.c();
     }
@@ -2041,7 +2047,380 @@ var app = (function () {
 
     var main = zxcvbn;
 
+    /**
+     * Return two parts array of exponential number
+     * @param {number|string|Array} num
+     * @return {string[]}
+     */
+    function getExponentialParts(num) {
+        return Array.isArray(num) ? num : String(num).split(/[eE]/);
+    }
+
+    /**
+     *
+     * @param {number|string|Array} num - number or array of its parts
+     */
+    function isExponential(num) {
+        const eParts = getExponentialParts(num);
+        return !Number.isNaN(Number(eParts[1]));
+    }
+
+    /**
+     * Converts exponential notation to a human readable string
+     * @param {number|string|Array} num - number or array of its parts
+     * @return {string}
+     */
+    function fromExponential(num) {
+        const eParts = getExponentialParts(num);
+        if (!isExponential(eParts)) {
+            return eParts[0];
+        }
+
+        const sign = eParts[0][0] === '-' ? '-' : '';
+        const digits = eParts[0].replace(/^-/, '');
+        const digitsParts = digits.split('.');
+        const wholeDigits = digitsParts[0];
+        const fractionDigits = digitsParts[1] || '';
+        let e = Number(eParts[1]);
+
+        if (e === 0) {
+            return `${sign + wholeDigits}.${fractionDigits}`;
+        } else if (e < 0) {
+            // move dot to the left
+            const countWholeAfterTransform = wholeDigits.length + e;
+            if (countWholeAfterTransform > 0) {
+                // transform whole to fraction
+                const wholeDigitsAfterTransform = wholeDigits.substr(0, countWholeAfterTransform);
+                const wholeDigitsTransformedToFraction = wholeDigits.substr(countWholeAfterTransform);
+                return `${sign + wholeDigitsAfterTransform}.${wholeDigitsTransformedToFraction}${fractionDigits}`;
+            } else {
+                // not enough whole digits: prepend with fractional zeros
+
+                // first e goes to dotted zero
+                let zeros = '0.';
+                e = countWholeAfterTransform;
+                while (e) {
+                    zeros += '0';
+                    e += 1;
+                }
+                return sign + zeros + wholeDigits + fractionDigits;
+            }
+        } else {
+            // move dot to the right
+            const countFractionAfterTransform = fractionDigits.length - e;
+            if (countFractionAfterTransform > 0) {
+                // transform fraction to whole
+                // countTransformedFractionToWhole = e
+                const fractionDigitsAfterTransform = fractionDigits.substr(e);
+                const fractionDigitsTransformedToWhole = fractionDigits.substr(0, e);
+                return `${sign + wholeDigits + fractionDigitsTransformedToWhole}.${fractionDigitsAfterTransform}`;
+            } else {
+                // not enough fractions: append whole zeros
+                let zerosCount = -countFractionAfterTransform;
+                let zeros = '';
+                while (zerosCount) {
+                    zeros += '0';
+                    zerosCount -= 1;
+                }
+                return sign + wholeDigits + fractionDigits + zeros;
+            }
+        }
+    }
+
+    var thousands = function thousands(number, separator) {
+      var parts = ((number || number === 0 ? number : '') + '').split('.');
+
+      if(parts.length) {
+        parts[0] = parts[0].replace(/(\d)(?=(\d{3})+\b)/g, '$1' + (separator || ','));
+      }
+
+      return parts.join('.');
+    };
+
+    /**
+     * Strip unnecessary last zeros after dot
+     * @param {string|number} num
+     * @param {boolean} [keepEnding] - not strip ending zeros
+     * @return {string|number}
+     */
+    function stripZeros(num, keepEnding) {
+        if (typeof num === 'string') {
+            if (!keepEnding && num.indexOf('.') !== -1) {
+                if (!/[eE]/.test(num)) {
+                    // strip ending zeros
+                    num = num.replace(/\.?0*$/, '');
+                } else {
+                    // strip ending zeros in exponential notation
+                    num = num.replace(/\.?0*(?=[eE])/, '');
+                }
+            }
+            // strip leading zeros
+            num = num.replace(/^0+(?!\.)(?!$)/, '');
+        }
+        return num;
+    }
+
+    /**
+     * Pad number string with zeros to fixed precision
+     * Don't work with exponential notation, use `from-exponential` if necessary
+     * @param {string} numString
+     * @param {number} precision
+     * @return {string}
+     */
+    function padZerosToFixed(numString, precision) {
+        if (!(precision > 0)) {
+            return numString;
+        }
+
+        if (typeof numString !== 'string') {
+            numString = numString.toString();
+        }
+
+        // leave exponential untouched
+        if (numString.toLowerCase().indexOf('e') !== -1) {
+            return numString;
+        }
+
+        const decimalStart = numString.indexOf('.');
+        const hasDot = decimalStart !== -1;
+        const decimalEnd = numString.length;
+
+        const countDecimals = hasDot ? decimalEnd - decimalStart - 1 : 0;
+        const countZerosToPad = precision - countDecimals;
+        let zeros = hasDot ? '' : '.';
+        for (let index = 0; index < countZerosToPad; index += 1) {
+            zeros += '0';
+        }
+
+        // insert zeros between number and exponential part
+        return numString.slice(0, Math.max(0, decimalEnd)) + zeros + numString.slice(decimalEnd);
+    }
+
+    /**
+     * @enum {number}
+     */
+    const PRECISION_SETTING = {
+        REDUCE: 1,
+        REDUCE_SIGNIFICANT: 2,
+        FIXED: 3,
+        INCREASE: 4,
+    };
+
+    /**
+     * @enum {number}
+     */
+    const ROUNDING_MODE = {
+        UP: 1,
+        DOWN: 2,
+        CEIL: 3,
+        FLOOR: 4,
+        HALF_UP: 5,
+        HALF_DOWN: 6,
+        HALF_EVEN: 7,
+    };
+
+    /**
+     * Reduce precision, accept precision settings:
+     * - 'reduce', 'default' - reduce precision to specified number of decimal digits, strip unnecessary ending zeros.
+     * - 'reduceSignificant', 'significant' - reduce precision to specified number of significant decimal digits, strip unnecessary ending zeros.
+     * - 'fixed' - reduce precision to specified number of decimal digits, pad with ending zeros.
+     * - 'increase' - pad with ending zeros to increase precision to specified number of decimal digits.
+     * Don't work with exponential notation, use `from-exponential` if necessary
+     * @param {string|number} num
+     * @param {number} [precision]
+     * @param {object} [options]
+     * @param {PRECISION_SETTING} [options.precisionSetting = PRECISION_SETTING.REDUCE]
+     * @param {ROUNDING_MODE} [options.roundingMode = ROUNDING_MODE.HALF_EVEN]
+     * @return {string}
+     */
+    function toPrecision(num, precision, options = {}) {
+        num = num.toString();
+
+        // leave exponential untouched
+        if (num.toLowerCase().indexOf('e') !== -1) {
+            return num;
+        }
+
+        if (!options.precisionSetting) {
+            options.precisionSetting = PRECISION_SETTING.REDUCE;
+        }
+
+        if (options.precisionSetting === PRECISION_SETTING.FIXED) {
+            let result = _reducePrecision(num, precision, {
+                precisionSetting: PRECISION_SETTING.REDUCE,
+                roundingMode: options.roundingMode,
+            });
+            result = stripZeros(result, true);
+            result = padZerosToFixed(result, precision);
+            return result;
+        } else if (options.precisionSetting === PRECISION_SETTING.INCREASE) {
+            const result = stripZeros(num);
+            return padZerosToFixed(result, precision);
+        } else {
+            return stripZeros(_reducePrecision(num, precision, options));
+        }
+    }
+
+    /**
+     * Reduce precision with `reduce` or `reduceSignificant` precisionSetting, can produce ending dot or zeros
+     * @param {string} numString
+     * @param {number} precision
+     * @param {object} [options]
+     * @param {PRECISION_SETTING} [options.precisionSetting = PRECISION_SETTING.REDUCE]
+     * @param {ROUNDING_MODE} [options.roundingMode]
+     * @return {string}
+     */
+    function _reducePrecision(numString, precision, {precisionSetting = PRECISION_SETTING.REDUCE, roundingMode = ROUNDING_MODE.HALF_UP} = {}) {
+        // do not proceed falsy precision, except `0`
+        if (!precision && precision !== 0) {
+            return numString;
+        }
+        precision = Number(precision);
+
+        const parts = numString.split('.');
+        let partWhole = parts[0];
+        const partDecimal = parts[1];
+
+        // nothing to reduce
+        if (!partDecimal) {
+            return numString;
+        }
+
+        // save negation and remove from string
+        let negation = false;
+        if (partWhole[0] === '-') {
+            negation = true;
+            partWhole = partWhole.slice(1);
+        }
+
+        // remove dot from string (it's easier to work with single integer value), dot position will be restored from parts length
+        numString = partWhole + partDecimal;
+
+        // if precision setting is `reduceSignificant` then start discount from zeros, ex. `.0000`, otherwise discount starting from dot `.`
+        if (precisionSetting === PRECISION_SETTING.REDUCE_SIGNIFICANT) {
+            const discountStartMatch = partDecimal.match(/^0*/);
+            if (discountStartMatch) {
+                precision += discountStartMatch[0].length;
+            }
+        }
+
+        // index from which to start erasing
+        const discountStartIndex = partWhole.length + precision;
+        // length of decimal part after erasing
+        const discountedDecimalPartLength = Math.min(partDecimal.length, precision);
+
+        // erased part
+        const remainder = numString.slice(discountStartIndex);
+        // string after erasing
+        numString = numString.slice(0, discountStartIndex);
+
+        // increment if needed by rounding mode
+        if (remainder && greaterThanFive(remainder, numString, negation, roundingMode)) {
+            numString = increment(numString);
+        }
+
+        // restore dot position from string end
+        if (discountedDecimalPartLength) {
+            const integerPartLength = numString.length - discountedDecimalPartLength;
+            numString = `${numString.slice(0, integerPartLength)}.${numString.slice(integerPartLength)}`;
+        }
+
+        // restore negation
+        return (negation ? '-' : '') + numString;
+    }
+
+    /**
+     *
+     * @param {string} part
+     * @param {string} pre
+     * @param {boolean} neg
+     * @param {ROUNDING_MODE} [mode=ROUNDING_MODE.HALF_EVEN]
+     * @return {boolean}
+     */
+    function greaterThanFive(part, pre, neg, mode) {
+        if (!part || part === new Array(part.length + 1).join('0')) return false;
+
+        // #region UP, DOWN, CEILING, FLOOR
+        if (mode === ROUNDING_MODE.DOWN || (!neg && mode === ROUNDING_MODE.FLOOR)
+            || (neg && mode === ROUNDING_MODE.CEIL)) return false;
+
+        if (mode === ROUNDING_MODE.UP || (neg && mode === ROUNDING_MODE.FLOOR)
+            || (!neg && mode === ROUNDING_MODE.CEIL)) return true;
+        // #endregion
+
+        // case when part !== five
+        const five = `5${new Array(part.length).join('0')}`;
+        if (part > five) return true;
+        else if (part < five) return false;
+
+        // case when part === five
+        switch (mode) {
+        case ROUNDING_MODE.HALF_DOWN: return false;
+        case ROUNDING_MODE.HALF_UP: return true;
+        // case ROUNDING_MODE.HALF_EVEN:
+        default: return (Number.parseInt(pre[pre.length - 1], 10) % 2 === 1);
+        }
+    }
+
+    /**
+     *
+     * @param {string} part
+     * @param {number} [value = 1]
+     * @return {string}
+     */
+    function increment(part, value = 1) {
+        let str = '';
+        // traverse string backward
+        for (let index = part.length - 1; index >= 0; index -= 1) {
+            let digit = Number.parseInt(part[index], 10) + value;
+            if (digit === 10) {
+                value = 1;
+                digit = 0;
+            } else {
+                value = 0;
+            }
+            str += digit;
+        }
+        if (value) {
+            str += value;
+        }
+
+        return str.split('').reverse().join('');
+    }
+
+    /**
+     * @param {number|string} num
+     * @param {object} [options]
+     * @param {number} [options.precision]
+     * @param {PRECISION_SETTING} [options.precisionSetting = PRECISION_SETTING.REDUCE]
+     * @param {ROUNDING_MODE} [options.roundingMode = ROUNDING_MODE.HALF_EVEN]
+     * @param {string} [options.thousandsSeparator]
+     * @param {string} [options.decimalSeparator = '.']
+     * @param {boolean} [options.separateOneDigit = true]
+     * @return {string}
+     */
+    function prettyNum(num, {precision, precisionSetting, roundingMode, thousandsSeparator, decimalSeparator, separateOneDigit = true} = {}) {
+        // remove exponential notation
+        num = fromExponential(num);
+
+        // reduce precision
+        num = toPrecision(num, precision, {precisionSetting, roundingMode});
+
+        // skip separation if `!separateOneDigit && num < 10000`
+        if (thousandsSeparator && (separateOneDigit || num >= 10000)) {
+            num = thousands(num, thousandsSeparator);
+        }
+
+        if (decimalSeparator && decimalSeparator !== '.') {
+            num = num.replace('.', decimalSeparator);
+        }
+
+        return num;
+    }
+
     /* src\Password.svelte generated by Svelte v3.54.0 */
+
+    const { console: console_1 } = globals;
     const file = "src\\Password.svelte";
 
     function create_fragment(ctx) {
@@ -2282,84 +2661,84 @@ var app = (function () {
     			attr_dev(input, "class", "input svelte-119nxo0");
     			attr_dev(input, "placeholder", "\n        ");
     			toggle_class(input, "valid", /*strength*/ ctx[9] > 3);
-    			add_location(input, file, 276, 6, 7040);
+    			add_location(input, file, 278, 6, 7196);
     			attr_dev(label, "for", "password");
     			attr_dev(label, "class", "label svelte-119nxo0");
-    			add_location(label, file, 285, 6, 7274);
+    			add_location(label, file, 287, 6, 7430);
     			attr_dev(span0, "class", "toggle-password svelte-119nxo0");
-    			add_location(span0, file, 286, 6, 7333);
+    			add_location(span0, file, 288, 6, 7489);
     			attr_dev(div0, "class", "field svelte-119nxo0");
-    			add_location(div0, file, 275, 4, 7014);
+    			add_location(div0, file, 277, 4, 7170);
     			attr_dev(span1, "class", "bar bar-1 svelte-119nxo0");
     			toggle_class(span1, "bar-show", /*strength*/ ctx[9] > 0);
-    			add_location(span1, file, 296, 6, 7674);
+    			add_location(span1, file, 298, 6, 7838);
     			attr_dev(span2, "class", "bar bar-2 svelte-119nxo0");
     			toggle_class(span2, "bar-show", /*strength*/ ctx[9] > 1);
-    			add_location(span2, file, 297, 6, 7737);
+    			add_location(span2, file, 299, 6, 7901);
     			attr_dev(span3, "class", "bar bar-3 svelte-119nxo0");
     			toggle_class(span3, "bar-show", /*strength*/ ctx[9] > 2);
-    			add_location(span3, file, 298, 6, 7800);
+    			add_location(span3, file, 300, 6, 7964);
     			attr_dev(span4, "class", "bar bar-4 svelte-119nxo0");
     			toggle_class(span4, "bar-show", /*strength*/ ctx[9] > 3);
-    			add_location(span4, file, 299, 6, 7863);
+    			add_location(span4, file, 301, 6, 8027);
     			attr_dev(div1, "class", "strength svelte-119nxo0");
-    			add_location(div1, file, 295, 4, 7645);
-    			add_location(h20, file, 303, 12, 7953);
-    			add_location(li0, file, 303, 8, 7949);
-    			add_location(li1, file, 304, 8, 7999);
-    			add_location(li2, file, 305, 8, 8042);
-    			add_location(li3, file, 306, 8, 8085);
-    			add_location(li4, file, 307, 8, 8126);
+    			add_location(div1, file, 297, 4, 7809);
+    			add_location(h20, file, 305, 12, 8117);
+    			add_location(li0, file, 305, 8, 8113);
+    			add_location(li1, file, 306, 8, 8163);
+    			add_location(li2, file, 307, 8, 8206);
+    			add_location(li3, file, 308, 8, 8249);
+    			add_location(li4, file, 309, 8, 8290);
     			attr_dev(ul0, "class", "svelte-119nxo0");
-    			add_location(ul0, file, 302, 4, 7936);
-    			add_location(h21, file, 311, 6, 8229);
-    			add_location(h4, file, 312, 6, 8258);
+    			add_location(ul0, file, 304, 4, 8100);
+    			add_location(h21, file, 313, 6, 8393);
+    			add_location(h4, file, 314, 6, 8422);
     			attr_dev(li5, "title", li5_title_value = "Online attack on a service that ratelimits password auth attempts.");
-    			add_location(li5, file, 314, 8, 8304);
+    			add_location(li5, file, 316, 8, 8468);
     			attr_dev(li6, "title", li6_title_value = "Online attack on a service that doesn't ratelimit, or where an attacker has outsmarted ratelimiting.");
-    			add_location(li6, file, 315, 8, 8437);
+    			add_location(li6, file, 317, 8, 8601);
     			attr_dev(li7, "title", li7_title_value = "Offline attack with multiple attackers, proper salting, and a slow hash function with a moderate work factor.");
-    			add_location(li7, file, 316, 8, 8603);
+    			add_location(li7, file, 318, 8, 8767);
     			attr_dev(li8, "title", li8_title_value = "Offline attack with multiple attackers, salting + fast hashing at about 10 billion/second.");
-    			add_location(li8, file, 317, 8, 8780);
+    			add_location(li8, file, 319, 8, 8944);
     			attr_dev(ul1, "class", "svelte-119nxo0");
-    			add_location(ul1, file, 313, 6, 8291);
+    			add_location(ul1, file, 315, 6, 8455);
     			attr_dev(div2, "class", "strength-text svelte-119nxo0");
-    			add_location(div2, file, 310, 4, 8195);
+    			add_location(div2, file, 312, 4, 8359);
     			button0.disabled = button0_disabled_value = /*strength*/ ctx[9] == null || /*length*/ ctx[7] == 0;
     			attr_dev(button0, "class", "svelte-119nxo0");
-    			add_location(button0, file, 321, 4, 8958);
+    			add_location(button0, file, 323, 4, 9122);
     			attr_dev(form, "class", "password-input svelte-119nxo0");
-    			add_location(form, file, 273, 2, 6938);
-    			add_location(h22, file, 327, 6, 9129);
-    			add_location(strong, file, 328, 33, 9178);
-    			add_location(p0, file, 328, 6, 9151);
-    			add_location(p1, file, 329, 6, 9219);
+    			add_location(form, file, 275, 2, 7094);
+    			add_location(h22, file, 329, 6, 9293);
+    			add_location(strong, file, 330, 33, 9342);
+    			add_location(p0, file, 330, 6, 9315);
+    			add_location(p1, file, 331, 6, 9383);
     			attr_dev(div3, "class", "rating");
-    			add_location(div3, file, 326, 4, 9102);
-    			add_location(h23, file, 332, 6, 9298);
-    			add_location(p2, file, 334, 8, 9355);
+    			add_location(div3, file, 328, 4, 9266);
+    			add_location(h23, file, 334, 6, 9462);
+    			add_location(p2, file, 336, 8, 9519);
     			attr_dev(div4, "class", "warningList");
-    			add_location(div4, file, 333, 6, 9321);
+    			add_location(div4, file, 335, 6, 9485);
     			attr_dev(div5, "class", "warning");
-    			add_location(div5, file, 331, 4, 9270);
-    			add_location(h24, file, 338, 6, 9449);
+    			add_location(div5, file, 333, 4, 9434);
+    			add_location(h24, file, 340, 6, 9613);
     			attr_dev(div6, "id", "suggestionsList");
     			attr_dev(div6, "class", "suggestionsList");
-    			add_location(div6, file, 339, 6, 9476);
+    			add_location(div6, file, 341, 6, 9640);
     			attr_dev(div7, "id", "suggestions");
     			attr_dev(div7, "class", "suggestions");
-    			add_location(div7, file, 337, 4, 9400);
-    			add_location(h25, file, 343, 6, 9585);
-    			add_location(p3, file, 344, 6, 9610);
+    			add_location(div7, file, 339, 4, 9564);
+    			add_location(h25, file, 345, 6, 9749);
+    			add_location(p3, file, 346, 6, 9774);
     			attr_dev(div8, "class", "sequences");
-    			add_location(div8, file, 342, 4, 9555);
+    			add_location(div8, file, 344, 4, 9719);
     			attr_dev(button1, "class", "svelte-119nxo0");
-    			add_location(button1, file, 346, 4, 9647);
+    			add_location(button1, file, 348, 4, 9811);
     			attr_dev(div9, "class", "password-score");
     			set_style(div9, "display", "none");
-    			add_location(div9, file, 325, 2, 9047);
-    			add_location(main, file, 272, 0, 6929);
+    			add_location(div9, file, 327, 2, 9211);
+    			add_location(main, file, 274, 0, 7085);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2472,8 +2851,8 @@ var app = (function () {
     					listen_dev(input, "input", /*validatePassword*/ ctx[15], false, false, false),
     					listen_dev(span0, "mouseenter", /*mouseenter_handler*/ ctx[18], false, false, false),
     					listen_dev(span0, "mouseleave", /*mouseleave_handler*/ ctx[19], false, false, false),
-    					listen_dev(span0, "mousedown", /*mousedown_handler*/ ctx[20], false, false, false),
-    					listen_dev(span0, "mouseup", /*mouseup_handler*/ ctx[21], false, false, false),
+    					listen_dev(span0, "pointerenter", /*pointerenter_handler*/ ctx[20], false, false, false),
+    					listen_dev(span0, "pointerleave", /*pointerleave_handler*/ ctx[21], false, false, false),
     					listen_dev(form, "submit", prevent_default(/*strengthScore*/ ctx[16]), false, true, false),
     					listen_dev(button1, "click", /*back*/ ctx[17], false, false, false)
     				];
@@ -2629,7 +3008,13 @@ var app = (function () {
     			crack_10ps_sec = result.crack_times_seconds.online_no_throttling_10_per_second;
     			crack_10kps_sec = result.crack_times_seconds.offline_slow_hashing_1e4_per_second;
     			crack_10bps_sec = result.crack_times_seconds.offline_fast_hashing_1e10_per_second;
-    			$$invalidate(14, guesses = result.guesses);
+
+    			$$invalidate(14, guesses = prettyNum(result.guesses, {
+    				precision: 1,
+    				roundingMode: ROUNDING_MODE.HALF_UP
+    			}));
+
+    			console.log(guesses);
     		} else {
     			$$invalidate(10, crack_100ph_disp = $$invalidate(11, crack_10ps_disp = $$invalidate(12, crack_10kps_disp = $$invalidate(13, crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = $$invalidate(14, guesses = 0)))));
     		}
@@ -2640,11 +3025,11 @@ var app = (function () {
     		show(document.querySelectorAll('.password-score'));
 
     		if (suggestions.length == 0) {
-    			suggestions[0] = "No suggestions, your password is strong enough already.";
+    			suggestions[0] = "No suggestions, your password is strong enough already";
     		}
 
     		if (warning == "") {
-    			$$invalidate(2, warning = "No warnings for your password.");
+    			$$invalidate(2, warning = "No warnings for your password");
     		}
 
     		var suggestionsContainer = document.getElementById("suggestionsList");
@@ -2658,26 +3043,28 @@ var app = (function () {
 
     	function back() {
     		document.getElementById("input").value = "";
+    		document.getElementById("suggestionsList").innerHTML = "";
+    		$$invalidate(9, strength = $$invalidate(7, length = $$invalidate(1, letters = $$invalidate(4, numbers = $$invalidate(8, spaces = $$invalidate(3, spec_characters = 0))))));
+    		$$invalidate(10, crack_100ph_disp = $$invalidate(11, crack_10ps_disp = $$invalidate(12, crack_10kps_disp = $$invalidate(13, crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = $$invalidate(14, guesses = 0)))));
     		hide(document.querySelectorAll('.password-score'));
     		show(document.querySelectorAll('.password-input'));
-    		document.getElementById("suggestionsList").innerHTML = "";
-    		$$invalidate(7, length = $$invalidate(1, letters = $$invalidate(4, numbers = $$invalidate(8, spaces = $$invalidate(3, spec_characters = 0)))));
-    		$$invalidate(10, crack_100ph_disp = $$invalidate(11, crack_10ps_disp = $$invalidate(12, crack_10kps_disp = $$invalidate(13, crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = $$invalidate(14, guesses = 0)))));
     	}
 
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<Password> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console_1.warn(`<Password> was created with unknown prop '${key}'`);
     	});
 
     	const mouseenter_handler = () => $$invalidate(0, showPassword = true);
     	const mouseleave_handler = () => $$invalidate(0, showPassword = false);
-    	const mousedown_handler = () => $$invalidate(0, showPassword = true);
-    	const mouseup_handler = () => $$invalidate(0, showPassword = false);
+    	const pointerenter_handler = () => $$invalidate(0, showPassword = true);
+    	const pointerleave_handler = () => $$invalidate(0, showPassword = false);
 
     	$$self.$capture_state = () => ({
     		zxcvbn: main,
+    		prettyNum,
+    		ROUNDING_MODE,
     		showPassword,
     		letters,
     		warning,
@@ -2753,8 +3140,8 @@ var app = (function () {
     		back,
     		mouseenter_handler,
     		mouseleave_handler,
-    		mousedown_handler,
-    		mouseup_handler
+    		pointerenter_handler,
+    		pointerleave_handler
     	];
     }
 

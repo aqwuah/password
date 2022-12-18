@@ -1,5 +1,6 @@
 <script>
   import zxcvbn from 'zxcvbn';
+  import prettyNum, {ROUNDING_MODE} from 'pretty-num';
 
   let showPassword = false;
   let letters, warning, spec_characters, numbers, strength_text, protection, length, spaces, strength, crack_100ph_disp, crack_10ps_disp, crack_10kps_disp, crack_10bps_disp, crack_100ph_sec, crack_10ps_sec, crack_10kps_sec, crack_10bps_sec, guesses = 0
@@ -55,7 +56,8 @@
       crack_10ps_sec = result.crack_times_seconds.online_no_throttling_10_per_second
       crack_10kps_sec = result.crack_times_seconds.offline_slow_hashing_1e4_per_second
       crack_10bps_sec = result.crack_times_seconds.offline_fast_hashing_1e10_per_second
-      guesses = result.guesses;
+      guesses = prettyNum(result.guesses, {precision: 1, roundingMode: ROUNDING_MODE.HALF_UP});
+      console.log(guesses);
     }
     else
     {
@@ -83,11 +85,11 @@ function show (elements) {
 
     if (suggestions.length == 0)
     {
-      suggestions[0] = "No suggestions, your password is strong enough already.";
+      suggestions[0] = "No suggestions, your password is strong enough already";
     }
     if (warning == "")
     {
-      warning = "No warnings for your password."
+      warning = "No warnings for your password"
     }
     var suggestionsContainer = document.getElementById("suggestionsList");
     suggestions.forEach(function(element, index){
@@ -99,11 +101,11 @@ function show (elements) {
 
   function back() {
     document.getElementById("input").value = "";
+    document.getElementById("suggestionsList").innerHTML = "";
+    strength = length =  letters = numbers = spaces = spec_characters = 0;
+    crack_100ph_disp = crack_10ps_disp = crack_10kps_disp = crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = guesses = 0
     hide(document.querySelectorAll('.password-score'));
     show(document.querySelectorAll('.password-input'));
-    document.getElementById("suggestionsList").innerHTML = "";
-    length =  letters = numbers = spaces = spec_characters = 0;
-    crack_100ph_disp = crack_10ps_disp = crack_10kps_disp = crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = guesses = 0
   }
 </script>
 
@@ -288,8 +290,8 @@ function show (elements) {
         class="toggle-password"
         on:mouseenter={() => (showPassword = true)}
         on:mouseleave={() => (showPassword = false)}
-        on:mousedown={() => (showPassword = true)}
-        on:mouseup={() => (showPassword = false)}>
+        on:pointerenter={() => (showPassword = true)}
+        on:pointerleave={() => (showPassword = false)}>
         {showPassword ? '🙈' : '👁️'}
       </span>
     </div>
