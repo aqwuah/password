@@ -5,7 +5,14 @@
   let password = "";
   let showPassword = false;
   let no_feedback, pretty_guesses, letters, warning, spec_characters, numbers, strength_text, protection, length, spaces, strength, crack_100ph_disp, crack_10ps_disp, crack_10kps_disp, crack_10bps_disp, crack_100ph_sec, crack_10ps_sec, crack_10kps_sec, crack_10bps_sec, guesses = 0
-  let suggestions = [] 
+  let suggestions = []
+
+  document.getElementById("password-input").onkeypress = function(e) {
+    var key = e.charCode || e.keyCode || 0;
+    if (key == 13) {
+      e.preventDefault();
+    }
+  }
 
   function validatePassword(e) {
     password = e.target.value;
@@ -284,7 +291,7 @@ function show (elements) {
 </style>
 
 <main>
-  <form class="password-input" on:submit|preventDefault={strengthScore}>
+  <form id="password-input" class="password-input" on:submit|preventDefault={strengthScore}>
 
     <div class="field">
       <input
@@ -340,7 +347,7 @@ function show (elements) {
     <div class="password-text">
       <h1>Results</h1>
       <p on:mouseenter={() => (showPassword = true)} on:mouseleave={() => (showPassword = false)} on:pointerenter={() => (showPassword = true)} on:pointerleave={() => (showPassword = false)}>
-        {showPassword ? password : '(hover/click to see password)'}
+        {showPassword ? password : '(hover/press to see password)'}
       </p>
     </div>
 
