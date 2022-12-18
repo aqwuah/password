@@ -3,7 +3,7 @@
   import prettyNum, {ROUNDING_MODE} from 'pretty-num';
 
   let showPassword = false;
-  let letters, warning, spec_characters, numbers, strength_text, protection, length, spaces, strength, crack_100ph_disp, crack_10ps_disp, crack_10kps_disp, crack_10bps_disp, crack_100ph_sec, crack_10ps_sec, crack_10kps_sec, crack_10bps_sec, guesses = 0
+  let pretty_guesses, letters, warning, spec_characters, numbers, strength_text, protection, length, spaces, strength, crack_100ph_disp, crack_10ps_disp, crack_10kps_disp, crack_10bps_disp, crack_100ph_sec, crack_10ps_sec, crack_10kps_sec, crack_10bps_sec, guesses = 0
   let suggestions = [] 
 
   function validatePassword(e) {
@@ -57,7 +57,7 @@
       crack_10kps_sec = result.crack_times_seconds.offline_slow_hashing_1e4_per_second
       crack_10bps_sec = result.crack_times_seconds.offline_fast_hashing_1e10_per_second
       guesses = prettyNum(result.guesses, {precision: 1, roundingMode: ROUNDING_MODE.HALF_UP});
-      console.log(guesses);
+      pretty_guesses = prettyNum(result.guesses, {thousandsSeparator: ","});
     }
     else
     {
@@ -83,14 +83,6 @@ function show (elements) {
     hide(document.querySelectorAll('.password-input'));
     show(document.querySelectorAll('.password-score'));
 
-    if (suggestions.length == 0)
-    {
-      suggestions[0] = "No suggestions, your password is strong enough already";
-    }
-    if (warning == "")
-    {
-      warning = "No warnings for your password"
-    }
     var suggestionsContainer = document.getElementById("suggestionsList");
     suggestions.forEach(function(element, index){
       var elementForSuggestion = document.createElement('p');
@@ -101,7 +93,9 @@ function show (elements) {
 
   function back() {
     document.getElementById("input").value = "";
-    document.getElementById("suggestionsList").innerHTML = "";
+    if (suggestions.length != 0) {
+      document.getElementById("suggestionsList").innerHTML = "";
+    }
     strength = length =  letters = numbers = spaces = spec_characters = 0;
     crack_100ph_disp = crack_10ps_disp = crack_10kps_disp = crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = guesses = 0
     hide(document.querySelectorAll('.password-score'));
@@ -331,21 +325,40 @@ function show (elements) {
       <p>Your password was rated <strong>{strength}</strong>/4.</p>
       <p>{strength_text} {protection}</p>
     </div>
-    <div class="warning">
-      <h2>Warning</h2>
-      <div class="warningList">
-        <p>{warning}</p>
+
+    {#if warning != ""}
+      <div class="warning">
+        <h2>Warning</h2>
+        <div class="warningList">
+          <p>{warning}</p>
+        </div>
       </div>
-    </div>
-    <div id="suggestions" class="suggestions">
-      <h2>Suggestions</h2>
-      <div id="suggestionsList" class="suggestionsList">
+    {/if}
+
+    {#if suggestions.length != 0}
+      <div id="suggestions" class="suggestions">
+        <h2>Suggestions</h2>
+        <div id="suggestionsList" class="suggestionsList">
+        </div>
       </div>
+    {/if}
+
+    <div class="stats">
+      <h2>Stats</h2>
+      <p>Your password is {length} characters long.</p>
+      <p>It contains {letters} {letters == 1 ? "letter" : "letters"}, {numbers} {numbers == 1 ? "number" : "numbers"}, {spec_characters} {spec_characters == 1 ? "special character" : "special characters"} and {spaces} {spaces == 1 ? "space" : "spaces"}.</p>
+      <p>It would take approximately {pretty_guesses} guesses to crack your password.</p>
     </div>
+
+    <div class="crackTimes">
+      <h2>Crack Times</h2>
+    </div>
+
     <div class="sequences">
       <h2>Sequences</h2>
       <p>(coming soon!)</p>
     </div>
+
     <button on:click={back}>Go back</button>
   </div>
 </main>
