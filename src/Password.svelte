@@ -7,13 +7,6 @@
   let no_feedback, pretty_guesses, letters, warning, spec_characters, numbers, strength_text, protection, length, spaces, strength, crack_100ph_disp, crack_10ps_disp, crack_10kps_disp, crack_10bps_disp, crack_100ph_sec, crack_10ps_sec, crack_10kps_sec, crack_10bps_sec, guesses = 0
   let suggestions = []
 
-  document.getElementById("password-input").onkeypress = function(e) {
-    var key = e.charCode || e.keyCode || 0;
-    if (key == 13) {
-      e.preventDefault();
-    }
-  }
-
   function validatePassword(e) {
     password = e.target.value;
 
