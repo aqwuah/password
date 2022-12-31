@@ -84,3 +84,20 @@ button:focus {
 	padding-left: 20px;
 	padding-right: 20px;
 }
+.sequencesDiv {
+	border: 2px solid gray;
+	border-radius: 12px;
+	padding-left: 20px;
+	padding-right: 20px;
+	margin-bottom: 20px;
+}
+.close-button {
+    margin-top:2rem;
+    padding:10px 30px;
+    font-weight:bold;
+    border:2px solid aqua;
+    color:aqua;
+    border-radius:100px;
+    background:transparent;
+    transition:all 750ms
+}

@@ -1,11 +1,16 @@
 <script>
   import zxcvbn from 'zxcvbn';
   import prettyNum, {ROUNDING_MODE} from 'pretty-num';
+  import { createEventDispatcher } from 'svelte';
+  import Modal from './Modal.svelte';
 
+  let showModal = false;
   let password = "";
   let showPassword = false;
   let no_feedback, pretty_guesses, letters, warning, spec_characters, numbers, strength_text, protection, length, spaces, strength, crack_100ph_disp, crack_10ps_disp, crack_10kps_disp, crack_10bps_disp, crack_100ph_sec, crack_10ps_sec, crack_10kps_sec, crack_10bps_sec, guesses = 0
-  let suggestions = []
+  let suggestions = [];
+  let sequences = [];
+
 
   function validatePassword(e) {
     password = e.target.value;
@@ -20,6 +25,8 @@
     warning = result.feedback.warning;
     suggestions.length = 0;
     suggestions = result.feedback.suggestions;
+    sequences.length = 0;
+    sequences = result.sequence;
 
     if (warning != "") {
       if (warning.slice(-1) != ".") {
@@ -74,12 +81,13 @@
       crack_10kps_sec = result.crack_times_seconds.offline_slow_hashing_1e4_per_second
       crack_10bps_sec = result.crack_times_seconds.offline_fast_hashing_1e10_per_second
       guesses = prettyNum(result.guesses, {precision: 1, roundingMode: ROUNDING_MODE.HALF_UP});
-      pretty_guesses = prettyNum(result.guesses, {thousandsSeparator: ","});
+      pretty_guesses = prettyNum(guesses, {thousandsSeparator: ","});
     }
     else
     {
       crack_100ph_disp = crack_10ps_disp = crack_10kps_disp = crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = guesses = 0
     }
+    console.log(result);
   }
 
   function hide (elements) {
@@ -108,6 +116,27 @@ function show (elements) {
     });
   }
 
+  function sequenceData () {
+    var sequencesContainer = document.getElementById("sequencesList");
+    document.getElementById("sequences-button").style.display = "none";
+    sequences.forEach(function(item) {
+      const div = document.createElement('div');
+      div.className = 'sequencesDiv';
+      const sequencePattern = document.createElement('h2');
+      const sequenceInfo = document.createElement('p');
+      sequenceInfo.innerText = JSON.stringify(item, null, 4);
+      div.appendChild(sequencePattern);
+      div.appendChild(sequenceInfo);
+      sequencesContainer.appendChild(div);
+    });
+  }
+
+  function clearModal () {
+    var sequencesContainer = document.getElementById("sequencesList");
+    sequencesContainer.innerHTML = "";
+    document.getElementById("sequences-button").style.display = "initial";
+  }
+
   function back() {
     document.getElementById("input").value = "";
     if (suggestions.length != 0) {
@@ -117,6 +146,8 @@ function show (elements) {
     crack_100ph_disp = crack_10ps_disp = crack_10kps_disp = crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = guesses = 0
     hide(document.querySelectorAll('.password-score'));
     show(document.querySelectorAll('.password-input'));
+    showPassword = false;
+    showModal = false;
   }
 </script>
 
@@ -392,10 +423,19 @@ function show (elements) {
     </div>
 
     <div class="sequences">
-      <h2>Sequences</h2>
-      <p>(coming soon!)</p>
+      <h2>Password Breakdown</h2>
+      <p>The breakdown shows parts of your password on screen. Do not proceed if this data is sensitive.</p>
+      <button id="sequences-button" class="sequences-button" on:click="{() => showModal = true}" on:click="{sequenceData}">Proceed</button>
+
+      {#if showModal}
+        <Modal on:close="{clearModal}" on:close="{() => showModal = false}">
+          <div class="sequencesList" id="sequencesList">
+          </div>
+        </Modal>
+      {/if}
     </div>
 
-    <button on:click={back}>Go back</button>
+    <button style="border: 2px solid red; color: red" class="go-back" on:click={back}>Go back</button>
+    <p><br/></p>
   </div>
 </main>

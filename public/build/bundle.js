@@ -4,6 +4,12 @@ var app = (function () {
     'use strict';
 
     function noop() { }
+    function assign(tar, src) {
+        // @ts-ignore
+        for (const k in src)
+            tar[k] = src[k];
+        return tar;
+    }
     function add_location(element, file, line, column, char) {
         element.__svelte_meta = {
             loc: { file, line, column, char }
@@ -26,6 +32,52 @@ var app = (function () {
     }
     function is_empty(obj) {
         return Object.keys(obj).length === 0;
+    }
+    function create_slot(definition, ctx, $$scope, fn) {
+        if (definition) {
+            const slot_ctx = get_slot_context(definition, ctx, $$scope, fn);
+            return definition[0](slot_ctx);
+        }
+    }
+    function get_slot_context(definition, ctx, $$scope, fn) {
+        return definition[1] && fn
+            ? assign($$scope.ctx.slice(), definition[1](fn(ctx)))
+            : $$scope.ctx;
+    }
+    function get_slot_changes(definition, $$scope, dirty, fn) {
+        if (definition[2] && fn) {
+            const lets = definition[2](fn(dirty));
+            if ($$scope.dirty === undefined) {
+                return lets;
+            }
+            if (typeof lets === 'object') {
+                const merged = [];
+                const len = Math.max($$scope.dirty.length, lets.length);
+                for (let i = 0; i < len; i += 1) {
+                    merged[i] = $$scope.dirty[i] | lets[i];
+                }
+                return merged;
+            }
+            return $$scope.dirty | lets;
+        }
+        return $$scope.dirty;
+    }
+    function update_slot_base(slot, slot_definition, ctx, $$scope, slot_changes, get_slot_context_fn) {
+        if (slot_changes) {
+            const slot_context = get_slot_context(slot_definition, ctx, $$scope, get_slot_context_fn);
+            slot.p(slot_context, slot_changes);
+        }
+    }
+    function get_all_dirty_from_scope($$scope) {
+        if ($$scope.ctx.length > 32) {
+            const dirty = [];
+            const length = $$scope.ctx.length / 32;
+            for (let i = 0; i < length; i++) {
+                dirty[i] = -1;
+            }
+            return dirty;
+        }
+        return -1;
     }
     function append(target, node) {
         target.appendChild(node);
@@ -87,6 +139,50 @@ var app = (function () {
     let current_component;
     function set_current_component(component) {
         current_component = component;
+    }
+    function get_current_component() {
+        if (!current_component)
+            throw new Error('Function called outside component initialization');
+        return current_component;
+    }
+    /**
+     * Schedules a callback to run immediately before the component is unmounted.
+     *
+     * Out of `onMount`, `beforeUpdate`, `afterUpdate` and `onDestroy`, this is the
+     * only one that runs inside a server-side component.
+     *
+     * https://svelte.dev/docs#run-time-svelte-ondestroy
+     */
+    function onDestroy(fn) {
+        get_current_component().$$.on_destroy.push(fn);
+    }
+    /**
+     * Creates an event dispatcher that can be used to dispatch [component events](/docs#template-syntax-component-directives-on-eventname).
+     * Event dispatchers are functions that can take two arguments: `name` and `detail`.
+     *
+     * Component events created with `createEventDispatcher` create a
+     * [CustomEvent](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent).
+     * These events do not [bubble](https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Building_blocks/Events#Event_bubbling_and_capture).
+     * The `detail` argument corresponds to the [CustomEvent.detail](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/detail)
+     * property and can contain any type of data.
+     *
+     * https://svelte.dev/docs#run-time-svelte-createeventdispatcher
+     */
+    function createEventDispatcher() {
+        const component = get_current_component();
+        return (type, detail, { cancelable = false } = {}) => {
+            const callbacks = component.$$.callbacks[type];
+            if (callbacks) {
+                // TODO are there situations where events could be dispatched
+                // in a server (non-DOM) environment?
+                const event = custom_event(type, detail, { cancelable });
+                callbacks.slice().forEach(fn => {
+                    fn.call(component, event);
+                });
+                return !event.defaultPrevented;
+            }
+            return true;
+        };
     }
 
     const dirty_components = [];
@@ -172,6 +268,19 @@ var app = (function () {
     }
     const outroing = new Set();
     let outros;
+    function group_outros() {
+        outros = {
+            r: 0,
+            c: [],
+            p: outros // parent group
+        };
+    }
+    function check_outros() {
+        if (!outros.r) {
+            run_all(outros.c);
+        }
+        outros = outros.p;
+    }
     function transition_in(block, local) {
         if (block && block.i) {
             outroing.delete(block);
@@ -197,6 +306,12 @@ var app = (function () {
             callback();
         }
     }
+
+    const globals = (typeof window !== 'undefined'
+        ? window
+        : typeof globalThis !== 'undefined'
+            ? globalThis
+            : global);
     function create_component(block) {
         block && block.c();
     }
@@ -2412,11 +2527,204 @@ var app = (function () {
         return num;
     }
 
-    /* src\Password.svelte generated by Svelte v3.54.0 */
-    const file = "src\\Password.svelte";
+    /* src\Modal.svelte generated by Svelte v3.54.0 */
+    const file = "src\\Modal.svelte";
 
-    // (353:4) {#if warning == "" && suggestions.length == 0}
-    function create_if_block_2(ctx) {
+    function create_fragment(ctx) {
+    	let div0;
+    	let t0;
+    	let div1;
+    	let t1;
+    	let button;
+    	let current;
+    	let mounted;
+    	let dispose;
+    	const default_slot_template = /*#slots*/ ctx[4].default;
+    	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[3], null);
+
+    	const block = {
+    		c: function create() {
+    			div0 = element("div");
+    			t0 = space();
+    			div1 = element("div");
+    			if (default_slot) default_slot.c();
+    			t1 = space();
+    			button = element("button");
+    			button.textContent = "Close";
+    			attr_dev(div0, "class", "modal-background");
+    			add_location(div0, file, 40, 0, 913);
+    			attr_dev(button, "class", "close-button");
+    			add_location(button, file, 46, 1, 1083);
+    			attr_dev(div1, "class", "modal");
+    			attr_dev(div1, "role", "dialog");
+    			attr_dev(div1, "aria-modal", "true");
+    			add_location(div1, file, 42, 0, 953);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div0, anchor);
+    			insert_dev(target, t0, anchor);
+    			insert_dev(target, div1, anchor);
+
+    			if (default_slot) {
+    				default_slot.m(div1, null);
+    			}
+
+    			append_dev(div1, t1);
+    			append_dev(div1, button);
+    			/*div1_binding*/ ctx[5](div1);
+    			current = true;
+
+    			if (!mounted) {
+    				dispose = [
+    					listen_dev(window, "keydown", /*handle_keydown*/ ctx[2], false, false, false),
+    					listen_dev(button, "click", /*close*/ ctx[1], false, false, false)
+    				];
+
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, [dirty]) {
+    			if (default_slot) {
+    				if (default_slot.p && (!current || dirty & /*$$scope*/ 8)) {
+    					update_slot_base(
+    						default_slot,
+    						default_slot_template,
+    						ctx,
+    						/*$$scope*/ ctx[3],
+    						!current
+    						? get_all_dirty_from_scope(/*$$scope*/ ctx[3])
+    						: get_slot_changes(default_slot_template, /*$$scope*/ ctx[3], dirty, null),
+    						null
+    					);
+    				}
+    			}
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(default_slot, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(default_slot, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div0);
+    			if (detaching) detach_dev(t0);
+    			if (detaching) detach_dev(div1);
+    			if (default_slot) default_slot.d(detaching);
+    			/*div1_binding*/ ctx[5](null);
+    			mounted = false;
+    			run_all(dispose);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots('Modal', slots, ['default']);
+    	const dispatch = createEventDispatcher();
+    	const close = () => dispatch('close');
+    	let modal;
+
+    	const handle_keydown = e => {
+    		if (e.key === 'Escape') {
+    			close();
+    			return;
+    		}
+
+    		if (e.key === 'Tab') {
+    			const nodes = modal.querySelectorAll('*');
+    			const tabbable = Array.from(nodes).filter(n => n.tabIndex >= 0);
+    			let index = tabbable.indexOf(document.activeElement);
+    			if (index === -1 && e.shiftKey) index = 0;
+    			index += tabbable.length + (e.shiftKey ? -1 : 1);
+    			index %= tabbable.length;
+    			tabbable[index].focus();
+    			e.preventDefault();
+    		}
+    	};
+
+    	const previously_focused = typeof document !== 'undefined' && document.activeElement;
+
+    	if (previously_focused) {
+    		onDestroy(() => {
+    			previously_focused.focus();
+    		});
+    	}
+
+    	const writable_props = [];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<Modal> was created with unknown prop '${key}'`);
+    	});
+
+    	function div1_binding($$value) {
+    		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
+    			modal = $$value;
+    			$$invalidate(0, modal);
+    		});
+    	}
+
+    	$$self.$$set = $$props => {
+    		if ('$$scope' in $$props) $$invalidate(3, $$scope = $$props.$$scope);
+    	};
+
+    	$$self.$capture_state = () => ({
+    		createEventDispatcher,
+    		onDestroy,
+    		dispatch,
+    		close,
+    		modal,
+    		handle_keydown,
+    		previously_focused
+    	});
+
+    	$$self.$inject_state = $$props => {
+    		if ('modal' in $$props) $$invalidate(0, modal = $$props.modal);
+    	};
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	return [modal, close, handle_keydown, $$scope, slots, div1_binding];
+    }
+
+    class Modal extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance, create_fragment, safe_not_equal, {});
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "Modal",
+    			options,
+    			id: create_fragment.name
+    		});
+    	}
+    }
+
+    /* src\Password.svelte generated by Svelte v3.54.0 */
+
+    const { console: console_1 } = globals;
+    const file$1 = "src\\Password.svelte";
+
+    // (384:4) {#if warning == "" && suggestions.length == 0}
+    function create_if_block_3(ctx) {
     	let div1;
     	let h2;
     	let t1;
@@ -2432,13 +2740,13 @@ var app = (function () {
     			t1 = space();
     			div0 = element("div");
     			p = element("p");
-    			t2 = text(/*no_feedback*/ ctx[2]);
-    			add_location(h2, file, 354, 8, 10217);
-    			add_location(p, file, 356, 10, 10283);
+    			t2 = text(/*no_feedback*/ ctx[3]);
+    			add_location(h2, file$1, 385, 8, 11306);
+    			add_location(p, file$1, 387, 10, 11372);
     			attr_dev(div0, "class", "no-feedback-box");
-    			add_location(div0, file, 355, 8, 10243);
+    			add_location(div0, file$1, 386, 8, 11332);
     			attr_dev(div1, "class", "no-feedback");
-    			add_location(div1, file, 353, 6, 10183);
+    			add_location(div1, file$1, 384, 6, 11272);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -2449,7 +2757,7 @@ var app = (function () {
     			append_dev(p, t2);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*no_feedback*/ 4) set_data_dev(t2, /*no_feedback*/ ctx[2]);
+    			if (dirty[0] & /*no_feedback*/ 8) set_data_dev(t2, /*no_feedback*/ ctx[3]);
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(div1);
@@ -2458,17 +2766,17 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_if_block_2.name,
+    		id: create_if_block_3.name,
     		type: "if",
-    		source: "(353:4) {#if warning == \\\"\\\" && suggestions.length == 0}",
+    		source: "(384:4) {#if warning == \\\"\\\" && suggestions.length == 0}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (362:4) {#if warning != ""}
-    function create_if_block_1(ctx) {
+    // (393:4) {#if warning != ""}
+    function create_if_block_2(ctx) {
     	let div1;
     	let h2;
     	let t1;
@@ -2484,13 +2792,13 @@ var app = (function () {
     			t1 = space();
     			div0 = element("div");
     			p = element("p");
-    			t2 = text(/*warning*/ ctx[5]);
-    			add_location(h2, file, 363, 8, 10403);
-    			add_location(p, file, 365, 10, 10464);
+    			t2 = text(/*warning*/ ctx[6]);
+    			add_location(h2, file$1, 394, 8, 11492);
+    			add_location(p, file$1, 396, 10, 11553);
     			attr_dev(div0, "class", "warningList");
-    			add_location(div0, file, 364, 8, 10428);
+    			add_location(div0, file$1, 395, 8, 11517);
     			attr_dev(div1, "class", "warning");
-    			add_location(div1, file, 362, 6, 10373);
+    			add_location(div1, file$1, 393, 6, 11462);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -2501,7 +2809,7 @@ var app = (function () {
     			append_dev(p, t2);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*warning*/ 32) set_data_dev(t2, /*warning*/ ctx[5]);
+    			if (dirty[0] & /*warning*/ 64) set_data_dev(t2, /*warning*/ ctx[6]);
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(div1);
@@ -2510,17 +2818,17 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_if_block_1.name,
+    		id: create_if_block_2.name,
     		type: "if",
-    		source: "(362:4) {#if warning != \\\"\\\"}",
+    		source: "(393:4) {#if warning != \\\"\\\"}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (371:4) {#if suggestions.length != 0}
-    function create_if_block(ctx) {
+    // (402:4) {#if suggestions.length != 0}
+    function create_if_block_1(ctx) {
     	let div1;
     	let h2;
     	let t1;
@@ -2533,13 +2841,13 @@ var app = (function () {
     			h2.textContent = "Feedback";
     			t1 = space();
     			div0 = element("div");
-    			add_location(h2, file, 372, 8, 10611);
+    			add_location(h2, file$1, 403, 8, 11700);
     			attr_dev(div0, "id", "suggestionsList");
     			attr_dev(div0, "class", "suggestionsList");
-    			add_location(div0, file, 373, 8, 10637);
+    			add_location(div0, file$1, 404, 8, 11726);
     			attr_dev(div1, "id", "suggestions");
     			attr_dev(div1, "class", "suggestions");
-    			add_location(div1, file, 371, 6, 10560);
+    			add_location(div1, file$1, 402, 6, 11649);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -2554,16 +2862,105 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_if_block.name,
+    		id: create_if_block_1.name,
     		type: "if",
-    		source: "(371:4) {#if suggestions.length != 0}",
+    		source: "(402:4) {#if suggestions.length != 0}",
     		ctx
     	});
 
     	return block;
     }
 
-    function create_fragment(ctx) {
+    // (430:6) {#if showModal}
+    function create_if_block(ctx) {
+    	let modal;
+    	let current;
+
+    	modal = new Modal({
+    			props: {
+    				$$slots: { default: [create_default_slot] },
+    				$$scope: { ctx }
+    			},
+    			$$inline: true
+    		});
+
+    	modal.$on("close", clearModal);
+    	modal.$on("close", /*close_handler*/ ctx[33]);
+
+    	const block = {
+    		c: function create() {
+    			create_component(modal.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(modal, target, anchor);
+    			current = true;
+    		},
+    		p: function update(ctx, dirty) {
+    			const modal_changes = {};
+
+    			if (dirty[1] & /*$$scope*/ 256) {
+    				modal_changes.$$scope = { dirty, ctx };
+    			}
+
+    			modal.$set(modal_changes);
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(modal.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(modal.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(modal, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block.name,
+    		type: "if",
+    		source: "(430:6) {#if showModal}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    // (431:8) <Modal on:close="{clearModal}" on:close="{() => showModal = false}">
+    function create_default_slot(ctx) {
+    	let div;
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			attr_dev(div, "class", "sequencesList");
+    			attr_dev(div, "id", "sequencesList");
+    			add_location(div, file$1, 431, 10, 13114);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    		},
+    		p: noop,
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_default_slot.name,
+    		type: "slot",
+    		source: "(431:8) <Modal on:close=\\\"{clearModal}\\\" on:close=\\\"{() => showModal = false}\\\">",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$1(ctx) {
     	let main;
     	let form;
     	let div0;
@@ -2573,7 +2970,7 @@ var app = (function () {
     	let label;
     	let t2;
     	let span0;
-    	let t3_value = (/*showPassword*/ ctx[1] ? '🙈' : '👁️') + "";
+    	let t3_value = (/*showPassword*/ ctx[2] ? '🙈' : '👁️') + "";
     	let t3;
     	let t4;
     	let div1;
@@ -2589,27 +2986,27 @@ var app = (function () {
     	let li0;
     	let h20;
     	let t9;
-    	let t10_value = (/*length*/ ctx[10] || "0") + "";
+    	let t10_value = (/*length*/ ctx[11] || "0") + "";
     	let t10;
     	let t11;
     	let li1;
     	let t12;
-    	let t13_value = (/*letters*/ ctx[4] || "0") + "";
+    	let t13_value = (/*letters*/ ctx[5] || "0") + "";
     	let t13;
     	let t14;
     	let li2;
     	let t15;
-    	let t16_value = (/*numbers*/ ctx[7] || "0") + "";
+    	let t16_value = (/*numbers*/ ctx[8] || "0") + "";
     	let t16;
     	let t17;
     	let li3;
     	let t18;
-    	let t19_value = (/*spaces*/ ctx[11] || "0") + "";
+    	let t19_value = (/*spaces*/ ctx[12] || "0") + "";
     	let t19;
     	let t20;
     	let li4;
     	let t21;
-    	let t22_value = (/*spec_characters*/ ctx[6] || "0") + "";
+    	let t22_value = (/*spec_characters*/ ctx[7] || "0") + "";
     	let t22;
     	let t23;
     	let div2;
@@ -2622,25 +3019,25 @@ var app = (function () {
     	let ul1;
     	let li5;
     	let t29;
-    	let t30_value = (/*crack_100ph_disp*/ ctx[13] || "0") + "";
+    	let t30_value = (/*crack_100ph_disp*/ ctx[14] || "0") + "";
     	let t30;
     	let li5_title_value;
     	let t31;
     	let li6;
     	let t32;
-    	let t33_value = (/*crack_10ps_disp*/ ctx[14] || "0") + "";
+    	let t33_value = (/*crack_10ps_disp*/ ctx[15] || "0") + "";
     	let t33;
     	let li6_title_value;
     	let t34;
     	let li7;
     	let t35;
-    	let t36_value = (/*crack_10kps_disp*/ ctx[15] || "0") + "";
+    	let t36_value = (/*crack_10kps_disp*/ ctx[16] || "0") + "";
     	let t36;
     	let li7_title_value;
     	let t37;
     	let li8;
     	let t38;
-    	let t39_value = (/*crack_10bps_disp*/ ctx[16] || "0") + "";
+    	let t39_value = (/*crack_10bps_disp*/ ctx[17] || "0") + "";
     	let t39;
     	let li8_title_value;
     	let t40;
@@ -2654,8 +3051,8 @@ var app = (function () {
     	let t44;
     	let p0;
 
-    	let t45_value = (/*showPassword*/ ctx[1]
-    	? /*password*/ ctx[0]
+    	let t45_value = (/*showPassword*/ ctx[2]
+    	? /*password*/ ctx[1]
     	: '(hover/press to see password)') + "";
 
     	let t45;
@@ -2690,18 +3087,18 @@ var app = (function () {
     	let t66;
     	let t67;
     	let t68;
-    	let t69_value = (/*letters*/ ctx[4] == 1 ? "letter" : "letters") + "";
+    	let t69_value = (/*letters*/ ctx[5] == 1 ? "letter" : "letters") + "";
     	let t69;
     	let t70;
     	let t71;
     	let t72;
-    	let t73_value = (/*numbers*/ ctx[7] == 1 ? "number" : "numbers") + "";
+    	let t73_value = (/*numbers*/ ctx[8] == 1 ? "number" : "numbers") + "";
     	let t73;
     	let t74;
     	let t75;
     	let t76;
 
-    	let t77_value = (/*spec_characters*/ ctx[6] == 1
+    	let t77_value = (/*spec_characters*/ ctx[7] == 1
     	? "special character"
     	: "special characters") + "";
 
@@ -2709,7 +3106,7 @@ var app = (function () {
     	let t78;
     	let t79;
     	let t80;
-    	let t81_value = (/*spaces*/ ctx[11] == 1 ? "space" : "spaces") + "";
+    	let t81_value = (/*spaces*/ ctx[12] == 1 ? "space" : "spaces") + "";
     	let t81;
     	let t82;
     	let t83;
@@ -2725,25 +3122,25 @@ var app = (function () {
     	let p6;
     	let t90;
     	let u2;
-    	let t91_value = (/*crack_100ph_disp*/ ctx[13] || "0") + "";
+    	let t91_value = (/*crack_100ph_disp*/ ctx[14] || "0") + "";
     	let t91;
     	let t92;
     	let p7;
     	let t93;
     	let u3;
-    	let t94_value = (/*crack_10ps_disp*/ ctx[14] || "0") + "";
+    	let t94_value = (/*crack_10ps_disp*/ ctx[15] || "0") + "";
     	let t94;
     	let t95;
     	let p8;
     	let t96;
     	let u4;
-    	let t97_value = (/*crack_10kps_disp*/ ctx[15] || "0") + "";
+    	let t97_value = (/*crack_10kps_disp*/ ctx[16] || "0") + "";
     	let t97;
     	let t98;
     	let p9;
     	let t99;
     	let u5;
-    	let t100_value = (/*crack_10bps_disp*/ ctx[16] || "0") + "";
+    	let t100_value = (/*crack_10bps_disp*/ ctx[17] || "0") + "";
     	let t100;
     	let t101;
     	let div7;
@@ -2752,11 +3149,19 @@ var app = (function () {
     	let p10;
     	let t105;
     	let button1;
+    	let t107;
+    	let t108;
+    	let button2;
+    	let t110;
+    	let p11;
+    	let br;
+    	let current;
     	let mounted;
     	let dispose;
-    	let if_block0 = /*warning*/ ctx[5] == "" && /*suggestions*/ ctx[18].length == 0 && create_if_block_2(ctx);
-    	let if_block1 = /*warning*/ ctx[5] != "" && create_if_block_1(ctx);
-    	let if_block2 = /*suggestions*/ ctx[18].length != 0 && create_if_block(ctx);
+    	let if_block0 = /*warning*/ ctx[6] == "" && /*suggestions*/ ctx[19].length == 0 && create_if_block_3(ctx);
+    	let if_block1 = /*warning*/ ctx[6] != "" && create_if_block_2(ctx);
+    	let if_block2 = /*suggestions*/ ctx[19].length != 0 && create_if_block_1(ctx);
+    	let if_block3 = /*showModal*/ ctx[0] && create_if_block(ctx);
 
     	const block = {
     		c: function create() {
@@ -2807,7 +3212,7 @@ var app = (function () {
     			h21.textContent = "Time to crack";
     			t25 = space();
     			h4 = element("h4");
-    			t26 = text(/*guesses*/ ctx[17]);
+    			t26 = text(/*guesses*/ ctx[18]);
     			t27 = text(" guesses");
     			t28 = space();
     			ul1 = element("ul");
@@ -2845,13 +3250,13 @@ var app = (function () {
     			p1 = element("p");
     			t49 = text("Your password was rated ");
     			strong = element("strong");
-    			t50 = text(/*strength*/ ctx[12]);
+    			t50 = text(/*strength*/ ctx[13]);
     			t51 = text("/4.");
     			t52 = space();
     			p2 = element("p");
-    			t53 = text(/*strength_text*/ ctx[8]);
+    			t53 = text(/*strength_text*/ ctx[9]);
     			t54 = space();
-    			t55 = text(/*protection*/ ctx[9]);
+    			t55 = text(/*protection*/ ctx[10]);
     			t56 = space();
     			if (if_block0) if_block0.c();
     			t57 = space();
@@ -2866,24 +3271,24 @@ var app = (function () {
     			p3 = element("p");
     			t62 = text("Your password is ");
     			u0 = element("u");
-    			t63 = text(/*length*/ ctx[10]);
+    			t63 = text(/*length*/ ctx[11]);
     			t64 = text(" characters long.");
     			t65 = space();
     			p4 = element("p");
     			t66 = text("It contains ");
-    			t67 = text(/*letters*/ ctx[4]);
+    			t67 = text(/*letters*/ ctx[5]);
     			t68 = space();
     			t69 = text(t69_value);
     			t70 = text(", ");
-    			t71 = text(/*numbers*/ ctx[7]);
+    			t71 = text(/*numbers*/ ctx[8]);
     			t72 = space();
     			t73 = text(t73_value);
     			t74 = text(", ");
-    			t75 = text(/*spec_characters*/ ctx[6]);
+    			t75 = text(/*spec_characters*/ ctx[7]);
     			t76 = space();
     			t77 = text(t77_value);
     			t78 = text(" and ");
-    			t79 = text(/*spaces*/ ctx[11]);
+    			t79 = text(/*spaces*/ ctx[12]);
     			t80 = space();
     			t81 = text(t81_value);
     			t82 = text(".");
@@ -2891,7 +3296,7 @@ var app = (function () {
     			p5 = element("p");
     			t84 = text("It would take approximately ");
     			u1 = element("u");
-    			t85 = text(/*pretty_guesses*/ ctx[3]);
+    			t85 = text(/*pretty_guesses*/ ctx[4]);
     			t86 = text(" guesses to crack your password.");
     			t87 = space();
     			div6 = element("div");
@@ -2920,108 +3325,123 @@ var app = (function () {
     			t101 = space();
     			div7 = element("div");
     			h25 = element("h2");
-    			h25.textContent = "Sequences";
+    			h25.textContent = "Password Breakdown";
     			t103 = space();
     			p10 = element("p");
-    			p10.textContent = "(coming soon!)";
+    			p10.textContent = "The breakdown shows parts of your password on screen. Do not proceed if this data is sensitive.";
     			t105 = space();
     			button1 = element("button");
-    			button1.textContent = "Go back";
-    			attr_dev(input, "type", input_type_value = /*showPassword*/ ctx[1] ? 'text' : 'password');
+    			button1.textContent = "Proceed";
+    			t107 = space();
+    			if (if_block3) if_block3.c();
+    			t108 = space();
+    			button2 = element("button");
+    			button2.textContent = "Go back";
+    			t110 = space();
+    			p11 = element("p");
+    			br = element("br");
+    			attr_dev(input, "type", input_type_value = /*showPassword*/ ctx[2] ? 'text' : 'password');
     			attr_dev(input, "name", "password");
     			attr_dev(input, "id", "input");
     			attr_dev(input, "class", "input svelte-119nxo0");
     			attr_dev(input, "placeholder", "\n        ");
-    			toggle_class(input, "valid", /*strength*/ ctx[12] > 3);
-    			add_location(input, file, 289, 6, 7553);
+    			toggle_class(input, "valid", /*strength*/ ctx[13] > 3);
+    			add_location(input, file$1, 320, 6, 8642);
     			attr_dev(label, "for", "password");
     			attr_dev(label, "class", "label svelte-119nxo0");
-    			add_location(label, file, 298, 6, 7787);
+    			add_location(label, file$1, 329, 6, 8876);
     			attr_dev(span0, "class", "toggle-password svelte-119nxo0");
-    			add_location(span0, file, 299, 6, 7846);
+    			add_location(span0, file$1, 330, 6, 8935);
     			attr_dev(div0, "class", "field svelte-119nxo0");
-    			add_location(div0, file, 288, 4, 7527);
+    			add_location(div0, file$1, 319, 4, 8616);
     			attr_dev(span1, "class", "bar bar-1 svelte-119nxo0");
-    			toggle_class(span1, "bar-show", /*strength*/ ctx[12] > 0);
-    			add_location(span1, file, 309, 6, 8195);
+    			toggle_class(span1, "bar-show", /*strength*/ ctx[13] > 0);
+    			add_location(span1, file$1, 340, 6, 9284);
     			attr_dev(span2, "class", "bar bar-2 svelte-119nxo0");
-    			toggle_class(span2, "bar-show", /*strength*/ ctx[12] > 1);
-    			add_location(span2, file, 310, 6, 8258);
+    			toggle_class(span2, "bar-show", /*strength*/ ctx[13] > 1);
+    			add_location(span2, file$1, 341, 6, 9347);
     			attr_dev(span3, "class", "bar bar-3 svelte-119nxo0");
-    			toggle_class(span3, "bar-show", /*strength*/ ctx[12] > 2);
-    			add_location(span3, file, 311, 6, 8321);
+    			toggle_class(span3, "bar-show", /*strength*/ ctx[13] > 2);
+    			add_location(span3, file$1, 342, 6, 9410);
     			attr_dev(span4, "class", "bar bar-4 svelte-119nxo0");
-    			toggle_class(span4, "bar-show", /*strength*/ ctx[12] > 3);
-    			add_location(span4, file, 312, 6, 8384);
+    			toggle_class(span4, "bar-show", /*strength*/ ctx[13] > 3);
+    			add_location(span4, file$1, 343, 6, 9473);
     			attr_dev(div1, "class", "strength svelte-119nxo0");
-    			add_location(div1, file, 308, 4, 8166);
-    			add_location(h20, file, 316, 12, 8474);
-    			add_location(li0, file, 316, 8, 8470);
-    			add_location(li1, file, 317, 8, 8520);
-    			add_location(li2, file, 318, 8, 8563);
-    			add_location(li3, file, 319, 8, 8606);
-    			add_location(li4, file, 320, 8, 8647);
+    			add_location(div1, file$1, 339, 4, 9255);
+    			add_location(h20, file$1, 347, 12, 9563);
+    			add_location(li0, file$1, 347, 8, 9559);
+    			add_location(li1, file$1, 348, 8, 9609);
+    			add_location(li2, file$1, 349, 8, 9652);
+    			add_location(li3, file$1, 350, 8, 9695);
+    			add_location(li4, file$1, 351, 8, 9736);
     			attr_dev(ul0, "class", "svelte-119nxo0");
-    			add_location(ul0, file, 315, 4, 8457);
-    			add_location(h21, file, 324, 6, 8750);
-    			add_location(h4, file, 325, 6, 8779);
+    			add_location(ul0, file$1, 346, 4, 9546);
+    			add_location(h21, file$1, 355, 6, 9839);
+    			add_location(h4, file$1, 356, 6, 9868);
     			attr_dev(li5, "title", li5_title_value = "Online attack on a service that ratelimits password auth attempts.");
-    			add_location(li5, file, 327, 8, 8825);
+    			add_location(li5, file$1, 358, 8, 9914);
     			attr_dev(li6, "title", li6_title_value = "Online attack on a service that doesn't ratelimit, or where an attacker has outsmarted ratelimiting.");
-    			add_location(li6, file, 328, 8, 8958);
+    			add_location(li6, file$1, 359, 8, 10047);
     			attr_dev(li7, "title", li7_title_value = "Offline attack with multiple attackers, proper salting, and a slow hash function with a moderate work factor.");
-    			add_location(li7, file, 329, 8, 9124);
+    			add_location(li7, file$1, 360, 8, 10213);
     			attr_dev(li8, "title", li8_title_value = "Offline attack with multiple attackers, salting + fast hashing at about 10 billion/second.");
-    			add_location(li8, file, 330, 8, 9301);
+    			add_location(li8, file$1, 361, 8, 10390);
     			attr_dev(ul1, "class", "svelte-119nxo0");
-    			add_location(ul1, file, 326, 6, 8812);
+    			add_location(ul1, file$1, 357, 6, 9901);
     			attr_dev(div2, "class", "strength-text svelte-119nxo0");
-    			add_location(div2, file, 323, 4, 8716);
-    			button0.disabled = button0_disabled_value = /*strength*/ ctx[12] == null || /*length*/ ctx[10] == 0;
+    			add_location(div2, file$1, 354, 4, 9805);
+    			button0.disabled = button0_disabled_value = /*strength*/ ctx[13] == null || /*length*/ ctx[11] == 0;
     			attr_dev(button0, "class", "svelte-119nxo0");
-    			add_location(button0, file, 334, 4, 9479);
+    			add_location(button0, file$1, 365, 4, 10568);
     			attr_dev(form, "id", "password-input");
     			attr_dev(form, "class", "password-input svelte-119nxo0");
-    			add_location(form, file, 286, 2, 7431);
-    			add_location(h1, file, 340, 6, 9657);
-    			add_location(p0, file, 341, 6, 9680);
+    			add_location(form, file$1, 317, 2, 8520);
+    			add_location(h1, file$1, 371, 6, 10746);
+    			add_location(p0, file$1, 372, 6, 10769);
     			attr_dev(div3, "class", "password-text");
-    			add_location(div3, file, 339, 4, 9623);
-    			add_location(h22, file, 347, 6, 9988);
-    			add_location(strong, file, 348, 33, 10037);
-    			add_location(p1, file, 348, 6, 10010);
-    			add_location(p2, file, 349, 6, 10078);
+    			add_location(div3, file$1, 370, 4, 10712);
+    			add_location(h22, file$1, 378, 6, 11077);
+    			add_location(strong, file$1, 379, 33, 11126);
+    			add_location(p1, file$1, 379, 6, 11099);
+    			add_location(p2, file$1, 380, 6, 11167);
     			attr_dev(div4, "class", "rating");
-    			add_location(div4, file, 346, 4, 9961);
-    			add_location(h23, file, 379, 6, 10757);
-    			add_location(u0, file, 380, 26, 10798);
-    			add_location(p3, file, 380, 6, 10778);
-    			add_location(p4, file, 381, 6, 10841);
-    			add_location(u1, file, 382, 37, 11130);
-    			add_location(p5, file, 382, 6, 11099);
+    			add_location(div4, file$1, 377, 4, 11050);
+    			add_location(h23, file$1, 410, 6, 11846);
+    			add_location(u0, file$1, 411, 26, 11887);
+    			add_location(p3, file$1, 411, 6, 11867);
+    			add_location(p4, file$1, 412, 6, 11930);
+    			add_location(u1, file$1, 413, 37, 12219);
+    			add_location(p5, file$1, 413, 6, 12188);
     			attr_dev(div5, "class", "stats");
-    			add_location(div5, file, 378, 4, 10731);
-    			add_location(h24, file, 386, 6, 11237);
-    			add_location(u2, file, 387, 41, 11299);
-    			add_location(p6, file, 387, 6, 11264);
-    			add_location(u3, file, 388, 44, 11380);
-    			add_location(p7, file, 388, 6, 11342);
-    			add_location(u4, file, 389, 51, 11467);
-    			add_location(p8, file, 389, 6, 11422);
-    			add_location(u5, file, 390, 51, 11555);
-    			add_location(p9, file, 390, 6, 11510);
+    			add_location(div5, file$1, 409, 4, 11820);
+    			add_location(h24, file$1, 417, 6, 12326);
+    			add_location(u2, file$1, 418, 41, 12388);
+    			add_location(p6, file$1, 418, 6, 12353);
+    			add_location(u3, file$1, 419, 44, 12469);
+    			add_location(p7, file$1, 419, 6, 12431);
+    			add_location(u4, file$1, 420, 51, 12556);
+    			add_location(p8, file$1, 420, 6, 12511);
+    			add_location(u5, file$1, 421, 51, 12644);
+    			add_location(p9, file$1, 421, 6, 12599);
     			attr_dev(div6, "class", "crackTimes");
-    			add_location(div6, file, 385, 4, 11206);
-    			add_location(h25, file, 394, 6, 11638);
-    			add_location(p10, file, 395, 6, 11663);
+    			add_location(div6, file$1, 416, 4, 12295);
+    			add_location(h25, file$1, 425, 6, 12727);
+    			add_location(p10, file$1, 426, 6, 12761);
+    			attr_dev(button1, "id", "sequences-button");
+    			attr_dev(button1, "class", "sequences-button svelte-119nxo0");
+    			add_location(button1, file$1, 427, 6, 12870);
     			attr_dev(div7, "class", "sequences");
-    			add_location(div7, file, 393, 4, 11608);
-    			attr_dev(button1, "class", "svelte-119nxo0");
-    			add_location(button1, file, 398, 4, 11701);
+    			add_location(div7, file$1, 424, 4, 12697);
+    			set_style(button2, "border", "2px solid red");
+    			set_style(button2, "color", "red");
+    			attr_dev(button2, "class", "go-back svelte-119nxo0");
+    			add_location(button2, file$1, 437, 4, 13223);
+    			add_location(br, file$1, 438, 7, 13329);
+    			add_location(p11, file$1, 438, 4, 13326);
     			attr_dev(div8, "class", "password-score");
     			set_style(div8, "display", "none");
-    			add_location(div8, file, 338, 2, 9568);
-    			add_location(main, file, 285, 0, 7422);
+    			add_location(div8, file$1, 369, 2, 10657);
+    			add_location(main, file$1, 316, 0, 8511);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -3183,82 +3603,92 @@ var app = (function () {
     			append_dev(div7, h25);
     			append_dev(div7, t103);
     			append_dev(div7, p10);
-    			append_dev(div8, t105);
-    			append_dev(div8, button1);
+    			append_dev(div7, t105);
+    			append_dev(div7, button1);
+    			append_dev(div7, t107);
+    			if (if_block3) if_block3.m(div7, null);
+    			append_dev(div8, t108);
+    			append_dev(div8, button2);
+    			append_dev(div8, t110);
+    			append_dev(div8, p11);
+    			append_dev(p11, br);
+    			current = true;
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(input, "input", /*validatePassword*/ ctx[19], false, false, false),
-    					listen_dev(span0, "mouseenter", /*mouseenter_handler*/ ctx[22], false, false, false),
-    					listen_dev(span0, "mouseleave", /*mouseleave_handler*/ ctx[23], false, false, false),
-    					listen_dev(span0, "pointerenter", /*pointerenter_handler*/ ctx[24], false, false, false),
-    					listen_dev(span0, "pointerleave", /*pointerleave_handler*/ ctx[25], false, false, false),
-    					listen_dev(form, "submit", prevent_default(/*strengthScore*/ ctx[20]), false, true, false),
-    					listen_dev(p0, "mouseenter", /*mouseenter_handler_1*/ ctx[26], false, false, false),
-    					listen_dev(p0, "mouseleave", /*mouseleave_handler_1*/ ctx[27], false, false, false),
-    					listen_dev(p0, "pointerenter", /*pointerenter_handler_1*/ ctx[28], false, false, false),
-    					listen_dev(p0, "pointerleave", /*pointerleave_handler_1*/ ctx[29], false, false, false),
-    					listen_dev(button1, "click", /*back*/ ctx[21], false, false, false)
+    					listen_dev(input, "input", /*validatePassword*/ ctx[20], false, false, false),
+    					listen_dev(span0, "mouseenter", /*mouseenter_handler*/ ctx[24], false, false, false),
+    					listen_dev(span0, "mouseleave", /*mouseleave_handler*/ ctx[25], false, false, false),
+    					listen_dev(span0, "pointerenter", /*pointerenter_handler*/ ctx[26], false, false, false),
+    					listen_dev(span0, "pointerleave", /*pointerleave_handler*/ ctx[27], false, false, false),
+    					listen_dev(form, "submit", prevent_default(/*strengthScore*/ ctx[21]), false, true, false),
+    					listen_dev(p0, "mouseenter", /*mouseenter_handler_1*/ ctx[28], false, false, false),
+    					listen_dev(p0, "mouseleave", /*mouseleave_handler_1*/ ctx[29], false, false, false),
+    					listen_dev(p0, "pointerenter", /*pointerenter_handler_1*/ ctx[30], false, false, false),
+    					listen_dev(p0, "pointerleave", /*pointerleave_handler_1*/ ctx[31], false, false, false),
+    					listen_dev(button1, "click", /*click_handler*/ ctx[32], false, false, false),
+    					listen_dev(button1, "click", /*sequenceData*/ ctx[22], false, false, false),
+    					listen_dev(button2, "click", /*back*/ ctx[23], false, false, false)
     				];
 
     				mounted = true;
     			}
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*showPassword*/ 2 && input_type_value !== (input_type_value = /*showPassword*/ ctx[1] ? 'text' : 'password')) {
+    			if (!current || dirty[0] & /*showPassword*/ 4 && input_type_value !== (input_type_value = /*showPassword*/ ctx[2] ? 'text' : 'password')) {
     				attr_dev(input, "type", input_type_value);
     			}
 
-    			if (dirty[0] & /*strength*/ 4096) {
-    				toggle_class(input, "valid", /*strength*/ ctx[12] > 3);
+    			if (!current || dirty[0] & /*strength*/ 8192) {
+    				toggle_class(input, "valid", /*strength*/ ctx[13] > 3);
     			}
 
-    			if (dirty[0] & /*showPassword*/ 2 && t3_value !== (t3_value = (/*showPassword*/ ctx[1] ? '🙈' : '👁️') + "")) set_data_dev(t3, t3_value);
+    			if ((!current || dirty[0] & /*showPassword*/ 4) && t3_value !== (t3_value = (/*showPassword*/ ctx[2] ? '🙈' : '👁️') + "")) set_data_dev(t3, t3_value);
 
-    			if (dirty[0] & /*strength*/ 4096) {
-    				toggle_class(span1, "bar-show", /*strength*/ ctx[12] > 0);
+    			if (!current || dirty[0] & /*strength*/ 8192) {
+    				toggle_class(span1, "bar-show", /*strength*/ ctx[13] > 0);
     			}
 
-    			if (dirty[0] & /*strength*/ 4096) {
-    				toggle_class(span2, "bar-show", /*strength*/ ctx[12] > 1);
+    			if (!current || dirty[0] & /*strength*/ 8192) {
+    				toggle_class(span2, "bar-show", /*strength*/ ctx[13] > 1);
     			}
 
-    			if (dirty[0] & /*strength*/ 4096) {
-    				toggle_class(span3, "bar-show", /*strength*/ ctx[12] > 2);
+    			if (!current || dirty[0] & /*strength*/ 8192) {
+    				toggle_class(span3, "bar-show", /*strength*/ ctx[13] > 2);
     			}
 
-    			if (dirty[0] & /*strength*/ 4096) {
-    				toggle_class(span4, "bar-show", /*strength*/ ctx[12] > 3);
+    			if (!current || dirty[0] & /*strength*/ 8192) {
+    				toggle_class(span4, "bar-show", /*strength*/ ctx[13] > 3);
     			}
 
-    			if (dirty[0] & /*length*/ 1024 && t10_value !== (t10_value = (/*length*/ ctx[10] || "0") + "")) set_data_dev(t10, t10_value);
-    			if (dirty[0] & /*letters*/ 16 && t13_value !== (t13_value = (/*letters*/ ctx[4] || "0") + "")) set_data_dev(t13, t13_value);
-    			if (dirty[0] & /*numbers*/ 128 && t16_value !== (t16_value = (/*numbers*/ ctx[7] || "0") + "")) set_data_dev(t16, t16_value);
-    			if (dirty[0] & /*spaces*/ 2048 && t19_value !== (t19_value = (/*spaces*/ ctx[11] || "0") + "")) set_data_dev(t19, t19_value);
-    			if (dirty[0] & /*spec_characters*/ 64 && t22_value !== (t22_value = (/*spec_characters*/ ctx[6] || "0") + "")) set_data_dev(t22, t22_value);
-    			if (dirty[0] & /*guesses*/ 131072) set_data_dev(t26, /*guesses*/ ctx[17]);
-    			if (dirty[0] & /*crack_100ph_disp*/ 8192 && t30_value !== (t30_value = (/*crack_100ph_disp*/ ctx[13] || "0") + "")) set_data_dev(t30, t30_value);
-    			if (dirty[0] & /*crack_10ps_disp*/ 16384 && t33_value !== (t33_value = (/*crack_10ps_disp*/ ctx[14] || "0") + "")) set_data_dev(t33, t33_value);
-    			if (dirty[0] & /*crack_10kps_disp*/ 32768 && t36_value !== (t36_value = (/*crack_10kps_disp*/ ctx[15] || "0") + "")) set_data_dev(t36, t36_value);
-    			if (dirty[0] & /*crack_10bps_disp*/ 65536 && t39_value !== (t39_value = (/*crack_10bps_disp*/ ctx[16] || "0") + "")) set_data_dev(t39, t39_value);
+    			if ((!current || dirty[0] & /*length*/ 2048) && t10_value !== (t10_value = (/*length*/ ctx[11] || "0") + "")) set_data_dev(t10, t10_value);
+    			if ((!current || dirty[0] & /*letters*/ 32) && t13_value !== (t13_value = (/*letters*/ ctx[5] || "0") + "")) set_data_dev(t13, t13_value);
+    			if ((!current || dirty[0] & /*numbers*/ 256) && t16_value !== (t16_value = (/*numbers*/ ctx[8] || "0") + "")) set_data_dev(t16, t16_value);
+    			if ((!current || dirty[0] & /*spaces*/ 4096) && t19_value !== (t19_value = (/*spaces*/ ctx[12] || "0") + "")) set_data_dev(t19, t19_value);
+    			if ((!current || dirty[0] & /*spec_characters*/ 128) && t22_value !== (t22_value = (/*spec_characters*/ ctx[7] || "0") + "")) set_data_dev(t22, t22_value);
+    			if (!current || dirty[0] & /*guesses*/ 262144) set_data_dev(t26, /*guesses*/ ctx[18]);
+    			if ((!current || dirty[0] & /*crack_100ph_disp*/ 16384) && t30_value !== (t30_value = (/*crack_100ph_disp*/ ctx[14] || "0") + "")) set_data_dev(t30, t30_value);
+    			if ((!current || dirty[0] & /*crack_10ps_disp*/ 32768) && t33_value !== (t33_value = (/*crack_10ps_disp*/ ctx[15] || "0") + "")) set_data_dev(t33, t33_value);
+    			if ((!current || dirty[0] & /*crack_10kps_disp*/ 65536) && t36_value !== (t36_value = (/*crack_10kps_disp*/ ctx[16] || "0") + "")) set_data_dev(t36, t36_value);
+    			if ((!current || dirty[0] & /*crack_10bps_disp*/ 131072) && t39_value !== (t39_value = (/*crack_10bps_disp*/ ctx[17] || "0") + "")) set_data_dev(t39, t39_value);
 
-    			if (dirty[0] & /*strength, length*/ 5120 && button0_disabled_value !== (button0_disabled_value = /*strength*/ ctx[12] == null || /*length*/ ctx[10] == 0)) {
+    			if (!current || dirty[0] & /*strength, length*/ 10240 && button0_disabled_value !== (button0_disabled_value = /*strength*/ ctx[13] == null || /*length*/ ctx[11] == 0)) {
     				prop_dev(button0, "disabled", button0_disabled_value);
     			}
 
-    			if (dirty[0] & /*showPassword, password*/ 3 && t45_value !== (t45_value = (/*showPassword*/ ctx[1]
-    			? /*password*/ ctx[0]
+    			if ((!current || dirty[0] & /*showPassword, password*/ 6) && t45_value !== (t45_value = (/*showPassword*/ ctx[2]
+    			? /*password*/ ctx[1]
     			: '(hover/press to see password)') + "")) set_data_dev(t45, t45_value);
 
-    			if (dirty[0] & /*strength*/ 4096) set_data_dev(t50, /*strength*/ ctx[12]);
-    			if (dirty[0] & /*strength_text*/ 256) set_data_dev(t53, /*strength_text*/ ctx[8]);
-    			if (dirty[0] & /*protection*/ 512) set_data_dev(t55, /*protection*/ ctx[9]);
+    			if (!current || dirty[0] & /*strength*/ 8192) set_data_dev(t50, /*strength*/ ctx[13]);
+    			if (!current || dirty[0] & /*strength_text*/ 512) set_data_dev(t53, /*strength_text*/ ctx[9]);
+    			if (!current || dirty[0] & /*protection*/ 1024) set_data_dev(t55, /*protection*/ ctx[10]);
 
-    			if (/*warning*/ ctx[5] == "" && /*suggestions*/ ctx[18].length == 0) {
+    			if (/*warning*/ ctx[6] == "" && /*suggestions*/ ctx[19].length == 0) {
     				if (if_block0) {
     					if_block0.p(ctx, dirty);
     				} else {
-    					if_block0 = create_if_block_2(ctx);
+    					if_block0 = create_if_block_3(ctx);
     					if_block0.c();
     					if_block0.m(div8, t57);
     				}
@@ -3267,11 +3697,11 @@ var app = (function () {
     				if_block0 = null;
     			}
 
-    			if (/*warning*/ ctx[5] != "") {
+    			if (/*warning*/ ctx[6] != "") {
     				if (if_block1) {
     					if_block1.p(ctx, dirty);
     				} else {
-    					if_block1 = create_if_block_1(ctx);
+    					if_block1 = create_if_block_2(ctx);
     					if_block1.c();
     					if_block1.m(div8, t58);
     				}
@@ -3280,9 +3710,9 @@ var app = (function () {
     				if_block1 = null;
     			}
 
-    			if (/*suggestions*/ ctx[18].length != 0) {
+    			if (/*suggestions*/ ctx[19].length != 0) {
     				if (if_block2) ; else {
-    					if_block2 = create_if_block(ctx);
+    					if_block2 = create_if_block_1(ctx);
     					if_block2.c();
     					if_block2.m(div8, t59);
     				}
@@ -3291,32 +3721,63 @@ var app = (function () {
     				if_block2 = null;
     			}
 
-    			if (dirty[0] & /*length*/ 1024) set_data_dev(t63, /*length*/ ctx[10]);
-    			if (dirty[0] & /*letters*/ 16) set_data_dev(t67, /*letters*/ ctx[4]);
-    			if (dirty[0] & /*letters*/ 16 && t69_value !== (t69_value = (/*letters*/ ctx[4] == 1 ? "letter" : "letters") + "")) set_data_dev(t69, t69_value);
-    			if (dirty[0] & /*numbers*/ 128) set_data_dev(t71, /*numbers*/ ctx[7]);
-    			if (dirty[0] & /*numbers*/ 128 && t73_value !== (t73_value = (/*numbers*/ ctx[7] == 1 ? "number" : "numbers") + "")) set_data_dev(t73, t73_value);
-    			if (dirty[0] & /*spec_characters*/ 64) set_data_dev(t75, /*spec_characters*/ ctx[6]);
+    			if (!current || dirty[0] & /*length*/ 2048) set_data_dev(t63, /*length*/ ctx[11]);
+    			if (!current || dirty[0] & /*letters*/ 32) set_data_dev(t67, /*letters*/ ctx[5]);
+    			if ((!current || dirty[0] & /*letters*/ 32) && t69_value !== (t69_value = (/*letters*/ ctx[5] == 1 ? "letter" : "letters") + "")) set_data_dev(t69, t69_value);
+    			if (!current || dirty[0] & /*numbers*/ 256) set_data_dev(t71, /*numbers*/ ctx[8]);
+    			if ((!current || dirty[0] & /*numbers*/ 256) && t73_value !== (t73_value = (/*numbers*/ ctx[8] == 1 ? "number" : "numbers") + "")) set_data_dev(t73, t73_value);
+    			if (!current || dirty[0] & /*spec_characters*/ 128) set_data_dev(t75, /*spec_characters*/ ctx[7]);
 
-    			if (dirty[0] & /*spec_characters*/ 64 && t77_value !== (t77_value = (/*spec_characters*/ ctx[6] == 1
+    			if ((!current || dirty[0] & /*spec_characters*/ 128) && t77_value !== (t77_value = (/*spec_characters*/ ctx[7] == 1
     			? "special character"
     			: "special characters") + "")) set_data_dev(t77, t77_value);
 
-    			if (dirty[0] & /*spaces*/ 2048) set_data_dev(t79, /*spaces*/ ctx[11]);
-    			if (dirty[0] & /*spaces*/ 2048 && t81_value !== (t81_value = (/*spaces*/ ctx[11] == 1 ? "space" : "spaces") + "")) set_data_dev(t81, t81_value);
-    			if (dirty[0] & /*pretty_guesses*/ 8) set_data_dev(t85, /*pretty_guesses*/ ctx[3]);
-    			if (dirty[0] & /*crack_100ph_disp*/ 8192 && t91_value !== (t91_value = (/*crack_100ph_disp*/ ctx[13] || "0") + "")) set_data_dev(t91, t91_value);
-    			if (dirty[0] & /*crack_10ps_disp*/ 16384 && t94_value !== (t94_value = (/*crack_10ps_disp*/ ctx[14] || "0") + "")) set_data_dev(t94, t94_value);
-    			if (dirty[0] & /*crack_10kps_disp*/ 32768 && t97_value !== (t97_value = (/*crack_10kps_disp*/ ctx[15] || "0") + "")) set_data_dev(t97, t97_value);
-    			if (dirty[0] & /*crack_10bps_disp*/ 65536 && t100_value !== (t100_value = (/*crack_10bps_disp*/ ctx[16] || "0") + "")) set_data_dev(t100, t100_value);
+    			if (!current || dirty[0] & /*spaces*/ 4096) set_data_dev(t79, /*spaces*/ ctx[12]);
+    			if ((!current || dirty[0] & /*spaces*/ 4096) && t81_value !== (t81_value = (/*spaces*/ ctx[12] == 1 ? "space" : "spaces") + "")) set_data_dev(t81, t81_value);
+    			if (!current || dirty[0] & /*pretty_guesses*/ 16) set_data_dev(t85, /*pretty_guesses*/ ctx[4]);
+    			if ((!current || dirty[0] & /*crack_100ph_disp*/ 16384) && t91_value !== (t91_value = (/*crack_100ph_disp*/ ctx[14] || "0") + "")) set_data_dev(t91, t91_value);
+    			if ((!current || dirty[0] & /*crack_10ps_disp*/ 32768) && t94_value !== (t94_value = (/*crack_10ps_disp*/ ctx[15] || "0") + "")) set_data_dev(t94, t94_value);
+    			if ((!current || dirty[0] & /*crack_10kps_disp*/ 65536) && t97_value !== (t97_value = (/*crack_10kps_disp*/ ctx[16] || "0") + "")) set_data_dev(t97, t97_value);
+    			if ((!current || dirty[0] & /*crack_10bps_disp*/ 131072) && t100_value !== (t100_value = (/*crack_10bps_disp*/ ctx[17] || "0") + "")) set_data_dev(t100, t100_value);
+
+    			if (/*showModal*/ ctx[0]) {
+    				if (if_block3) {
+    					if_block3.p(ctx, dirty);
+
+    					if (dirty[0] & /*showModal*/ 1) {
+    						transition_in(if_block3, 1);
+    					}
+    				} else {
+    					if_block3 = create_if_block(ctx);
+    					if_block3.c();
+    					transition_in(if_block3, 1);
+    					if_block3.m(div7, null);
+    				}
+    			} else if (if_block3) {
+    				group_outros();
+
+    				transition_out(if_block3, 1, 1, () => {
+    					if_block3 = null;
+    				});
+
+    				check_outros();
+    			}
     		},
-    		i: noop,
-    		o: noop,
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(if_block3);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(if_block3);
+    			current = false;
+    		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(main);
     			if (if_block0) if_block0.d();
     			if (if_block1) if_block1.d();
     			if (if_block2) if_block2.d();
+    			if (if_block3) if_block3.d();
     			mounted = false;
     			run_all(dispose);
     		}
@@ -3324,7 +3785,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment.name,
+    		id: create_fragment$1.name,
     		type: "component",
     		source: "",
     		ctx
@@ -3349,9 +3810,16 @@ var app = (function () {
     	}
     }
 
-    function instance($$self, $$props, $$invalidate) {
+    function clearModal() {
+    	var sequencesContainer = document.getElementById("sequencesList");
+    	sequencesContainer.innerHTML = "";
+    	document.getElementById("sequences-button").style.display = "initial";
+    }
+
+    function instance$1($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('Password', slots, []);
+    	let showModal = false;
     	let password = "";
     	let showPassword = false;
 
@@ -3377,72 +3845,77 @@ var app = (function () {
     		guesses = 0;
 
     	let suggestions = [];
+    	let sequences = [];
 
     	function validatePassword(e) {
-    		$$invalidate(0, password = e.target.value);
+    		$$invalidate(1, password = e.target.value);
     		let result = main(password);
-    		$$invalidate(12, strength = result.score);
-    		$$invalidate(10, length = password.length);
-    		$$invalidate(4, letters = password.replace(/[^A-Za-z]/g, "").length);
-    		$$invalidate(7, numbers = password.replace(/[^0-9]/g, "").length);
-    		$$invalidate(11, spaces = password.split(" ").length - 1);
-    		$$invalidate(6, spec_characters = length - letters - numbers - spaces);
-    		$$invalidate(5, warning = result.feedback.warning);
-    		$$invalidate(18, suggestions.length = 0, suggestions);
-    		$$invalidate(18, suggestions = result.feedback.suggestions);
+    		$$invalidate(13, strength = result.score);
+    		$$invalidate(11, length = password.length);
+    		$$invalidate(5, letters = password.replace(/[^A-Za-z]/g, "").length);
+    		$$invalidate(8, numbers = password.replace(/[^0-9]/g, "").length);
+    		$$invalidate(12, spaces = password.split(" ").length - 1);
+    		$$invalidate(7, spec_characters = length - letters - numbers - spaces);
+    		$$invalidate(6, warning = result.feedback.warning);
+    		$$invalidate(19, suggestions.length = 0, suggestions);
+    		$$invalidate(19, suggestions = result.feedback.suggestions);
+    		sequences.length = 0;
+    		sequences = result.sequence;
 
     		if (warning != "") {
     			if (warning.slice(-1) != ".") {
-    				$$invalidate(5, warning = warning + ".");
+    				$$invalidate(6, warning = warning + ".");
     			}
     		}
 
     		for (var i = 0; i < suggestions.length; i++) {
     			if (suggestions[i].slice(-1) != ".") {
-    				$$invalidate(18, suggestions[i] = suggestions[i] + ".", suggestions);
+    				$$invalidate(19, suggestions[i] = suggestions[i] + ".", suggestions);
     			}
     		}
 
     		if (warning == "" && suggestions.length == 0) {
-    			$$invalidate(2, no_feedback = "There is no feedback for your password as it is secure enough.");
+    			$$invalidate(3, no_feedback = "There is no feedback for your password as it is secure enough.");
     		}
 
     		if (strength == 0) {
-    			$$invalidate(8, strength_text = "It is too guessable,");
-    			$$invalidate(9, protection = "and provides no protection (it is a risky password).");
+    			$$invalidate(9, strength_text = "It is too guessable,");
+    			$$invalidate(10, protection = "and provides no protection (it is a risky password).");
     		} else if (strength == 1) {
-    			$$invalidate(8, strength_text = "It is very guessable,");
-    			$$invalidate(9, protection = "and provides protection only from throttled online attacks.");
+    			$$invalidate(9, strength_text = "It is very guessable,");
+    			$$invalidate(10, protection = "and provides protection only from throttled online attacks.");
     		} else if (strength == 2) {
-    			$$invalidate(8, strength_text = "It is somewhat guessable,");
-    			$$invalidate(9, protection = "but provides protection from throttled and unthrottled online attacks.");
+    			$$invalidate(9, strength_text = "It is somewhat guessable,");
+    			$$invalidate(10, protection = "but provides protection from throttled and unthrottled online attacks.");
     		} else if (strength == 3) {
-    			$$invalidate(8, strength_text = "It is safely unguessable,");
-    			$$invalidate(9, protection = "and provides moderate protection from offline slow-hash scenarios (+ strong protection from online attacks).");
+    			$$invalidate(9, strength_text = "It is safely unguessable,");
+    			$$invalidate(10, protection = "and provides moderate protection from offline slow-hash scenarios (+ strong protection from online attacks).");
     		} else if (strength == 4) {
-    			$$invalidate(8, strength_text = "It is very unguessable,");
-    			$$invalidate(9, protection = "and provides strong protection from offline slow-hash scenarios (+ strong protection from online attacks).");
+    			$$invalidate(9, strength_text = "It is very unguessable,");
+    			$$invalidate(10, protection = "and provides strong protection from offline slow-hash scenarios (+ strong protection from online attacks).");
     		}
 
     		if (password.length !== 0) {
-    			$$invalidate(13, crack_100ph_disp = result.crack_times_display.online_throttling_100_per_hour);
-    			$$invalidate(14, crack_10ps_disp = result.crack_times_display.online_no_throttling_10_per_second);
-    			$$invalidate(15, crack_10kps_disp = result.crack_times_display.offline_slow_hashing_1e4_per_second);
-    			$$invalidate(16, crack_10bps_disp = result.crack_times_display.offline_fast_hashing_1e10_per_second);
+    			$$invalidate(14, crack_100ph_disp = result.crack_times_display.online_throttling_100_per_hour);
+    			$$invalidate(15, crack_10ps_disp = result.crack_times_display.online_no_throttling_10_per_second);
+    			$$invalidate(16, crack_10kps_disp = result.crack_times_display.offline_slow_hashing_1e4_per_second);
+    			$$invalidate(17, crack_10bps_disp = result.crack_times_display.offline_fast_hashing_1e10_per_second);
     			crack_100ph_sec = result.crack_times_seconds.online_throttling_100_per_hour;
     			crack_10ps_sec = result.crack_times_seconds.online_no_throttling_10_per_second;
     			crack_10kps_sec = result.crack_times_seconds.offline_slow_hashing_1e4_per_second;
     			crack_10bps_sec = result.crack_times_seconds.offline_fast_hashing_1e10_per_second;
 
-    			$$invalidate(17, guesses = prettyNum(result.guesses, {
+    			$$invalidate(18, guesses = prettyNum(result.guesses, {
     				precision: 1,
     				roundingMode: ROUNDING_MODE.HALF_UP
     			}));
 
-    			$$invalidate(3, pretty_guesses = prettyNum(result.guesses, { thousandsSeparator: "," }));
+    			$$invalidate(4, pretty_guesses = prettyNum(guesses, { thousandsSeparator: "," }));
     		} else {
-    			$$invalidate(13, crack_100ph_disp = $$invalidate(14, crack_10ps_disp = $$invalidate(15, crack_10kps_disp = $$invalidate(16, crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = $$invalidate(17, guesses = 0)))));
+    			$$invalidate(14, crack_100ph_disp = $$invalidate(15, crack_10ps_disp = $$invalidate(16, crack_10kps_disp = $$invalidate(17, crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = $$invalidate(18, guesses = 0)))));
     		}
+
+    		console.log(result);
     	}
 
     	function strengthScore() {
@@ -3457,6 +3930,22 @@ var app = (function () {
     		});
     	}
 
+    	function sequenceData() {
+    		var sequencesContainer = document.getElementById("sequencesList");
+    		document.getElementById("sequences-button").style.display = "none";
+
+    		sequences.forEach(function (item) {
+    			const div = document.createElement('div');
+    			div.className = 'sequencesDiv';
+    			const sequencePattern = document.createElement('h2');
+    			const sequenceInfo = document.createElement('p');
+    			sequenceInfo.innerText = JSON.stringify(item, null, 4);
+    			div.appendChild(sequencePattern);
+    			div.appendChild(sequenceInfo);
+    			sequencesContainer.appendChild(div);
+    		});
+    	}
+
     	function back() {
     		document.getElementById("input").value = "";
 
@@ -3464,31 +3953,38 @@ var app = (function () {
     			document.getElementById("suggestionsList").innerHTML = "";
     		}
 
-    		$$invalidate(12, strength = $$invalidate(10, length = $$invalidate(4, letters = $$invalidate(7, numbers = $$invalidate(11, spaces = $$invalidate(6, spec_characters = 0))))));
-    		$$invalidate(13, crack_100ph_disp = $$invalidate(14, crack_10ps_disp = $$invalidate(15, crack_10kps_disp = $$invalidate(16, crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = $$invalidate(17, guesses = 0)))));
+    		$$invalidate(13, strength = $$invalidate(11, length = $$invalidate(5, letters = $$invalidate(8, numbers = $$invalidate(12, spaces = $$invalidate(7, spec_characters = 0))))));
+    		$$invalidate(14, crack_100ph_disp = $$invalidate(15, crack_10ps_disp = $$invalidate(16, crack_10kps_disp = $$invalidate(17, crack_10bps_disp = crack_100ph_sec = crack_10ps_sec = crack_10bps_sec = crack_10bps_sec = $$invalidate(18, guesses = 0)))));
     		hide(document.querySelectorAll('.password-score'));
     		show(document.querySelectorAll('.password-input'));
+    		$$invalidate(2, showPassword = false);
+    		$$invalidate(0, showModal = false);
     	}
 
     	const writable_props = [];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<Password> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console_1.warn(`<Password> was created with unknown prop '${key}'`);
     	});
 
-    	const mouseenter_handler = () => $$invalidate(1, showPassword = true);
-    	const mouseleave_handler = () => $$invalidate(1, showPassword = false);
-    	const pointerenter_handler = () => $$invalidate(1, showPassword = true);
-    	const pointerleave_handler = () => $$invalidate(1, showPassword = false);
-    	const mouseenter_handler_1 = () => $$invalidate(1, showPassword = true);
-    	const mouseleave_handler_1 = () => $$invalidate(1, showPassword = false);
-    	const pointerenter_handler_1 = () => $$invalidate(1, showPassword = true);
-    	const pointerleave_handler_1 = () => $$invalidate(1, showPassword = false);
+    	const mouseenter_handler = () => $$invalidate(2, showPassword = true);
+    	const mouseleave_handler = () => $$invalidate(2, showPassword = false);
+    	const pointerenter_handler = () => $$invalidate(2, showPassword = true);
+    	const pointerleave_handler = () => $$invalidate(2, showPassword = false);
+    	const mouseenter_handler_1 = () => $$invalidate(2, showPassword = true);
+    	const mouseleave_handler_1 = () => $$invalidate(2, showPassword = false);
+    	const pointerenter_handler_1 = () => $$invalidate(2, showPassword = true);
+    	const pointerleave_handler_1 = () => $$invalidate(2, showPassword = false);
+    	const click_handler = () => $$invalidate(0, showModal = true);
+    	const close_handler = () => $$invalidate(0, showModal = false);
 
     	$$self.$capture_state = () => ({
     		zxcvbn: main,
     		prettyNum,
     		ROUNDING_MODE,
+    		createEventDispatcher,
+    		Modal,
+    		showModal,
     		password,
     		showPassword,
     		no_feedback,
@@ -3512,37 +4008,42 @@ var app = (function () {
     		crack_10bps_sec,
     		guesses,
     		suggestions,
+    		sequences,
     		validatePassword,
     		hide,
     		show,
     		strengthScore,
+    		sequenceData,
+    		clearModal,
     		back
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ('password' in $$props) $$invalidate(0, password = $$props.password);
-    		if ('showPassword' in $$props) $$invalidate(1, showPassword = $$props.showPassword);
-    		if ('no_feedback' in $$props) $$invalidate(2, no_feedback = $$props.no_feedback);
-    		if ('pretty_guesses' in $$props) $$invalidate(3, pretty_guesses = $$props.pretty_guesses);
-    		if ('letters' in $$props) $$invalidate(4, letters = $$props.letters);
-    		if ('warning' in $$props) $$invalidate(5, warning = $$props.warning);
-    		if ('spec_characters' in $$props) $$invalidate(6, spec_characters = $$props.spec_characters);
-    		if ('numbers' in $$props) $$invalidate(7, numbers = $$props.numbers);
-    		if ('strength_text' in $$props) $$invalidate(8, strength_text = $$props.strength_text);
-    		if ('protection' in $$props) $$invalidate(9, protection = $$props.protection);
-    		if ('length' in $$props) $$invalidate(10, length = $$props.length);
-    		if ('spaces' in $$props) $$invalidate(11, spaces = $$props.spaces);
-    		if ('strength' in $$props) $$invalidate(12, strength = $$props.strength);
-    		if ('crack_100ph_disp' in $$props) $$invalidate(13, crack_100ph_disp = $$props.crack_100ph_disp);
-    		if ('crack_10ps_disp' in $$props) $$invalidate(14, crack_10ps_disp = $$props.crack_10ps_disp);
-    		if ('crack_10kps_disp' in $$props) $$invalidate(15, crack_10kps_disp = $$props.crack_10kps_disp);
-    		if ('crack_10bps_disp' in $$props) $$invalidate(16, crack_10bps_disp = $$props.crack_10bps_disp);
+    		if ('showModal' in $$props) $$invalidate(0, showModal = $$props.showModal);
+    		if ('password' in $$props) $$invalidate(1, password = $$props.password);
+    		if ('showPassword' in $$props) $$invalidate(2, showPassword = $$props.showPassword);
+    		if ('no_feedback' in $$props) $$invalidate(3, no_feedback = $$props.no_feedback);
+    		if ('pretty_guesses' in $$props) $$invalidate(4, pretty_guesses = $$props.pretty_guesses);
+    		if ('letters' in $$props) $$invalidate(5, letters = $$props.letters);
+    		if ('warning' in $$props) $$invalidate(6, warning = $$props.warning);
+    		if ('spec_characters' in $$props) $$invalidate(7, spec_characters = $$props.spec_characters);
+    		if ('numbers' in $$props) $$invalidate(8, numbers = $$props.numbers);
+    		if ('strength_text' in $$props) $$invalidate(9, strength_text = $$props.strength_text);
+    		if ('protection' in $$props) $$invalidate(10, protection = $$props.protection);
+    		if ('length' in $$props) $$invalidate(11, length = $$props.length);
+    		if ('spaces' in $$props) $$invalidate(12, spaces = $$props.spaces);
+    		if ('strength' in $$props) $$invalidate(13, strength = $$props.strength);
+    		if ('crack_100ph_disp' in $$props) $$invalidate(14, crack_100ph_disp = $$props.crack_100ph_disp);
+    		if ('crack_10ps_disp' in $$props) $$invalidate(15, crack_10ps_disp = $$props.crack_10ps_disp);
+    		if ('crack_10kps_disp' in $$props) $$invalidate(16, crack_10kps_disp = $$props.crack_10kps_disp);
+    		if ('crack_10bps_disp' in $$props) $$invalidate(17, crack_10bps_disp = $$props.crack_10bps_disp);
     		if ('crack_100ph_sec' in $$props) crack_100ph_sec = $$props.crack_100ph_sec;
     		if ('crack_10ps_sec' in $$props) crack_10ps_sec = $$props.crack_10ps_sec;
     		if ('crack_10kps_sec' in $$props) crack_10kps_sec = $$props.crack_10kps_sec;
     		if ('crack_10bps_sec' in $$props) crack_10bps_sec = $$props.crack_10bps_sec;
-    		if ('guesses' in $$props) $$invalidate(17, guesses = $$props.guesses);
-    		if ('suggestions' in $$props) $$invalidate(18, suggestions = $$props.suggestions);
+    		if ('guesses' in $$props) $$invalidate(18, guesses = $$props.guesses);
+    		if ('suggestions' in $$props) $$invalidate(19, suggestions = $$props.suggestions);
+    		if ('sequences' in $$props) sequences = $$props.sequences;
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -3550,6 +4051,7 @@ var app = (function () {
     	}
 
     	return [
+    		showModal,
     		password,
     		showPassword,
     		no_feedback,
@@ -3571,6 +4073,7 @@ var app = (function () {
     		suggestions,
     		validatePassword,
     		strengthScore,
+    		sequenceData,
     		back,
     		mouseenter_handler,
     		mouseleave_handler,
@@ -3579,28 +4082,30 @@ var app = (function () {
     		mouseenter_handler_1,
     		mouseleave_handler_1,
     		pointerenter_handler_1,
-    		pointerleave_handler_1
+    		pointerleave_handler_1,
+    		click_handler,
+    		close_handler
     	];
     }
 
     class Password extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance, create_fragment, safe_not_equal, {}, null, [-1, -1]);
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, {}, null, [-1, -1]);
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "Password",
     			options,
-    			id: create_fragment.name
+    			id: create_fragment$1.name
     		});
     	}
     }
 
     /* src\App.svelte generated by Svelte v3.54.0 */
-    const file$1 = "src\\App.svelte";
+    const file$2 = "src\\App.svelte";
 
-    function create_fragment$1(ctx) {
+    function create_fragment$2(ctx) {
     	let main;
     	let h1;
     	let t1;
@@ -3629,12 +4134,12 @@ var app = (function () {
     			t5 = space();
     			create_component(password.$$.fragment);
     			attr_dev(h1, "class", "svelte-vyb12m");
-    			add_location(h1, file$1, 22, 2, 339);
-    			add_location(u, file$1, 23, 32, 406);
-    			add_location(strong, file$1, 23, 24, 398);
-    			add_location(p, file$1, 23, 2, 376);
+    			add_location(h1, file$2, 22, 2, 339);
+    			add_location(u, file$2, 23, 32, 406);
+    			add_location(strong, file$2, 23, 24, 398);
+    			add_location(p, file$2, 23, 2, 376);
     			attr_dev(main, "class", "svelte-vyb12m");
-    			add_location(main, file$1, 20, 0, 329);
+    			add_location(main, file$2, 20, 0, 329);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -3670,7 +4175,7 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$1.name,
+    		id: create_fragment$2.name,
     		type: "component",
     		source: "",
     		ctx
@@ -3679,7 +4184,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$1($$self, $$props, $$invalidate) {
+    function instance$2($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('App', slots, []);
     	const writable_props = [];
@@ -3695,13 +4200,13 @@ var app = (function () {
     class App extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$1, create_fragment$1, safe_not_equal, {});
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "App",
     			options,
-    			id: create_fragment$1.name
+    			id: create_fragment$2.name
     		});
     	}
     }
