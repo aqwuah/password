@@ -130,15 +130,13 @@ function show (elements) {
       sequenceToken.innerHTML = "<strong>" + item.token + "</strong>";
       sequenceInfo.innerText = ""
       for (const key in item) {
-        if (key !== "guesses") {
-          let capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/[_-]/g, " ");
-          if (typeof item[key] === "object" && !Array.isArray(item[key])) {
+        let capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/[_-]/g, " ");
+        if (typeof item[key] === "object" && !Array.isArray(item[key])) {
+        } else {
+          if (key == "guesses" || key == "token" || key == "pattern" || key == "i" || key == "j" || key == "guesses_log10" || key == "base_guesses" || key == "sequence_space" || key == "separator" || key == "base_matches") {
           } else {
-            if (key == "token" || key == "pattern" || key == "i" || key == "j" || key == "guesses_log10" || key == "base_guesses" || key == "separator" || key == "base_matches") {
-            } else {
-              let formattedItem = item[key].toString().replace(/[_-]/g, " ");
-              sequenceInfo.innerHTML += "<br>" + capitalizedKey + ": " + formattedItem;
-            }
+            let formattedItem = item[key].toString().replace(/[_-]/g, " ");
+            sequenceInfo.innerHTML += "<br>" + capitalizedKey + ": " + formattedItem;
           }
         }
       }
@@ -352,6 +350,7 @@ function show (elements) {
 </style>
 
 <main>
+
   <form id="password-input" class="password-input" on:submit|preventDefault={strengthScore}>
 
     <div class="field">

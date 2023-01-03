@@ -2723,7 +2723,7 @@ var app = (function () {
     const { console: console_1 } = globals;
     const file$1 = "src\\Password.svelte";
 
-    // (421:4) {#if warning == "" && suggestions.length == 0}
+    // (420:4) {#if warning == "" && suggestions.length == 0}
     function create_if_block_3(ctx) {
     	let div1;
     	let h2;
@@ -2741,12 +2741,12 @@ var app = (function () {
     			div0 = element("div");
     			p = element("p");
     			t2 = text(/*no_feedback*/ ctx[3]);
-    			add_location(h2, file$1, 422, 8, 12807);
-    			add_location(p, file$1, 424, 10, 12873);
+    			add_location(h2, file$1, 421, 8, 12794);
+    			add_location(p, file$1, 423, 10, 12860);
     			attr_dev(div0, "class", "no-feedback-box");
-    			add_location(div0, file$1, 423, 8, 12833);
+    			add_location(div0, file$1, 422, 8, 12820);
     			attr_dev(div1, "class", "no-feedback");
-    			add_location(div1, file$1, 421, 6, 12773);
+    			add_location(div1, file$1, 420, 6, 12760);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -2768,14 +2768,14 @@ var app = (function () {
     		block,
     		id: create_if_block_3.name,
     		type: "if",
-    		source: "(421:4) {#if warning == \\\"\\\" && suggestions.length == 0}",
+    		source: "(420:4) {#if warning == \\\"\\\" && suggestions.length == 0}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (430:4) {#if warning != ""}
+    // (429:4) {#if warning != ""}
     function create_if_block_2(ctx) {
     	let div1;
     	let h2;
@@ -2793,12 +2793,12 @@ var app = (function () {
     			div0 = element("div");
     			p = element("p");
     			t2 = text(/*warning*/ ctx[6]);
-    			add_location(h2, file$1, 431, 8, 12993);
-    			add_location(p, file$1, 433, 10, 13054);
+    			add_location(h2, file$1, 430, 8, 12980);
+    			add_location(p, file$1, 432, 10, 13041);
     			attr_dev(div0, "class", "warningList");
-    			add_location(div0, file$1, 432, 8, 13018);
+    			add_location(div0, file$1, 431, 8, 13005);
     			attr_dev(div1, "class", "warning");
-    			add_location(div1, file$1, 430, 6, 12963);
+    			add_location(div1, file$1, 429, 6, 12950);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -2820,14 +2820,14 @@ var app = (function () {
     		block,
     		id: create_if_block_2.name,
     		type: "if",
-    		source: "(430:4) {#if warning != \\\"\\\"}",
+    		source: "(429:4) {#if warning != \\\"\\\"}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (439:4) {#if suggestions.length != 0}
+    // (438:4) {#if suggestions.length != 0}
     function create_if_block_1(ctx) {
     	let div1;
     	let h2;
@@ -2841,13 +2841,13 @@ var app = (function () {
     			h2.textContent = "Feedback";
     			t1 = space();
     			div0 = element("div");
-    			add_location(h2, file$1, 440, 8, 13201);
+    			add_location(h2, file$1, 439, 8, 13188);
     			attr_dev(div0, "id", "suggestionsList");
     			attr_dev(div0, "class", "suggestionsList");
-    			add_location(div0, file$1, 441, 8, 13227);
+    			add_location(div0, file$1, 440, 8, 13214);
     			attr_dev(div1, "id", "suggestions");
     			attr_dev(div1, "class", "suggestions");
-    			add_location(div1, file$1, 439, 6, 13150);
+    			add_location(div1, file$1, 438, 6, 13137);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -2864,14 +2864,14 @@ var app = (function () {
     		block,
     		id: create_if_block_1.name,
     		type: "if",
-    		source: "(439:4) {#if suggestions.length != 0}",
+    		source: "(438:4) {#if suggestions.length != 0}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (467:6) {#if showModal}
+    // (466:6) {#if showModal}
     function create_if_block(ctx) {
     	let modal;
     	let current;
@@ -2922,14 +2922,14 @@ var app = (function () {
     		block,
     		id: create_if_block.name,
     		type: "if",
-    		source: "(467:6) {#if showModal}",
+    		source: "(466:6) {#if showModal}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (468:8) <Modal on:close="{clearModal}" on:close="{() => showModal = false}">
+    // (467:8) <Modal on:close="{clearModal}" on:close="{() => showModal = false}">
     function create_default_slot(ctx) {
     	let div;
 
@@ -2938,7 +2938,7 @@ var app = (function () {
     			div = element("div");
     			attr_dev(div, "class", "sequencesList");
     			attr_dev(div, "id", "sequencesList");
-    			add_location(div, file$1, 468, 10, 14615);
+    			add_location(div, file$1, 467, 10, 14602);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
@@ -2953,7 +2953,7 @@ var app = (function () {
     		block,
     		id: create_default_slot.name,
     		type: "slot",
-    		source: "(468:8) <Modal on:close=\\\"{clearModal}\\\" on:close=\\\"{() => showModal = false}\\\">",
+    		source: "(467:8) <Modal on:close=\\\"{clearModal}\\\" on:close=\\\"{() => showModal = false}\\\">",
     		ctx
     	});
 
@@ -3346,102 +3346,102 @@ var app = (function () {
     			attr_dev(input, "class", "input svelte-119nxo0");
     			attr_dev(input, "placeholder", "\n        ");
     			toggle_class(input, "valid", /*strength*/ ctx[13] > 3);
-    			add_location(input, file$1, 357, 6, 10143);
+    			add_location(input, file$1, 356, 6, 10130);
     			attr_dev(label, "for", "password");
     			attr_dev(label, "class", "label svelte-119nxo0");
-    			add_location(label, file$1, 366, 6, 10377);
+    			add_location(label, file$1, 365, 6, 10364);
     			attr_dev(span0, "class", "toggle-password svelte-119nxo0");
-    			add_location(span0, file$1, 367, 6, 10436);
+    			add_location(span0, file$1, 366, 6, 10423);
     			attr_dev(div0, "class", "field svelte-119nxo0");
-    			add_location(div0, file$1, 356, 4, 10117);
+    			add_location(div0, file$1, 355, 4, 10104);
     			attr_dev(span1, "class", "bar bar-1 svelte-119nxo0");
     			toggle_class(span1, "bar-show", /*strength*/ ctx[13] > 0);
-    			add_location(span1, file$1, 377, 6, 10785);
+    			add_location(span1, file$1, 376, 6, 10772);
     			attr_dev(span2, "class", "bar bar-2 svelte-119nxo0");
     			toggle_class(span2, "bar-show", /*strength*/ ctx[13] > 1);
-    			add_location(span2, file$1, 378, 6, 10848);
+    			add_location(span2, file$1, 377, 6, 10835);
     			attr_dev(span3, "class", "bar bar-3 svelte-119nxo0");
     			toggle_class(span3, "bar-show", /*strength*/ ctx[13] > 2);
-    			add_location(span3, file$1, 379, 6, 10911);
+    			add_location(span3, file$1, 378, 6, 10898);
     			attr_dev(span4, "class", "bar bar-4 svelte-119nxo0");
     			toggle_class(span4, "bar-show", /*strength*/ ctx[13] > 3);
-    			add_location(span4, file$1, 380, 6, 10974);
+    			add_location(span4, file$1, 379, 6, 10961);
     			attr_dev(div1, "class", "strength svelte-119nxo0");
-    			add_location(div1, file$1, 376, 4, 10756);
-    			add_location(h20, file$1, 384, 12, 11064);
-    			add_location(li0, file$1, 384, 8, 11060);
-    			add_location(li1, file$1, 385, 8, 11110);
-    			add_location(li2, file$1, 386, 8, 11153);
-    			add_location(li3, file$1, 387, 8, 11196);
-    			add_location(li4, file$1, 388, 8, 11237);
+    			add_location(div1, file$1, 375, 4, 10743);
+    			add_location(h20, file$1, 383, 12, 11051);
+    			add_location(li0, file$1, 383, 8, 11047);
+    			add_location(li1, file$1, 384, 8, 11097);
+    			add_location(li2, file$1, 385, 8, 11140);
+    			add_location(li3, file$1, 386, 8, 11183);
+    			add_location(li4, file$1, 387, 8, 11224);
     			attr_dev(ul0, "class", "svelte-119nxo0");
-    			add_location(ul0, file$1, 383, 4, 11047);
-    			add_location(h21, file$1, 392, 6, 11340);
-    			add_location(h4, file$1, 393, 6, 11369);
+    			add_location(ul0, file$1, 382, 4, 11034);
+    			add_location(h21, file$1, 391, 6, 11327);
+    			add_location(h4, file$1, 392, 6, 11356);
     			attr_dev(li5, "title", li5_title_value = "Online attack on a service that ratelimits password auth attempts.");
-    			add_location(li5, file$1, 395, 8, 11415);
+    			add_location(li5, file$1, 394, 8, 11402);
     			attr_dev(li6, "title", li6_title_value = "Online attack on a service that doesn't ratelimit, or where an attacker has outsmarted ratelimiting.");
-    			add_location(li6, file$1, 396, 8, 11548);
+    			add_location(li6, file$1, 395, 8, 11535);
     			attr_dev(li7, "title", li7_title_value = "Offline attack with multiple attackers, proper salting, and a slow hash function with a moderate work factor.");
-    			add_location(li7, file$1, 397, 8, 11714);
+    			add_location(li7, file$1, 396, 8, 11701);
     			attr_dev(li8, "title", li8_title_value = "Offline attack with multiple attackers, salting + fast hashing at about 10 billion/second.");
-    			add_location(li8, file$1, 398, 8, 11891);
+    			add_location(li8, file$1, 397, 8, 11878);
     			attr_dev(ul1, "class", "svelte-119nxo0");
-    			add_location(ul1, file$1, 394, 6, 11402);
+    			add_location(ul1, file$1, 393, 6, 11389);
     			attr_dev(div2, "class", "strength-text svelte-119nxo0");
-    			add_location(div2, file$1, 391, 4, 11306);
+    			add_location(div2, file$1, 390, 4, 11293);
     			button0.disabled = button0_disabled_value = /*strength*/ ctx[13] == null || /*length*/ ctx[11] == 0;
     			attr_dev(button0, "class", "svelte-119nxo0");
-    			add_location(button0, file$1, 402, 4, 12069);
+    			add_location(button0, file$1, 401, 4, 12056);
     			attr_dev(form, "id", "password-input");
     			attr_dev(form, "class", "password-input svelte-119nxo0");
-    			add_location(form, file$1, 354, 2, 10021);
-    			add_location(h1, file$1, 408, 6, 12247);
-    			add_location(p0, file$1, 409, 6, 12270);
+    			add_location(form, file$1, 353, 2, 10008);
+    			add_location(h1, file$1, 407, 6, 12234);
+    			add_location(p0, file$1, 408, 6, 12257);
     			attr_dev(div3, "class", "password-text");
-    			add_location(div3, file$1, 407, 4, 12213);
-    			add_location(h22, file$1, 415, 6, 12578);
-    			add_location(strong, file$1, 416, 33, 12627);
-    			add_location(p1, file$1, 416, 6, 12600);
-    			add_location(p2, file$1, 417, 6, 12668);
+    			add_location(div3, file$1, 406, 4, 12200);
+    			add_location(h22, file$1, 414, 6, 12565);
+    			add_location(strong, file$1, 415, 33, 12614);
+    			add_location(p1, file$1, 415, 6, 12587);
+    			add_location(p2, file$1, 416, 6, 12655);
     			attr_dev(div4, "class", "rating");
-    			add_location(div4, file$1, 414, 4, 12551);
-    			add_location(h23, file$1, 447, 6, 13347);
-    			add_location(u0, file$1, 448, 26, 13388);
-    			add_location(p3, file$1, 448, 6, 13368);
-    			add_location(p4, file$1, 449, 6, 13431);
-    			add_location(u1, file$1, 450, 37, 13720);
-    			add_location(p5, file$1, 450, 6, 13689);
+    			add_location(div4, file$1, 413, 4, 12538);
+    			add_location(h23, file$1, 446, 6, 13334);
+    			add_location(u0, file$1, 447, 26, 13375);
+    			add_location(p3, file$1, 447, 6, 13355);
+    			add_location(p4, file$1, 448, 6, 13418);
+    			add_location(u1, file$1, 449, 37, 13707);
+    			add_location(p5, file$1, 449, 6, 13676);
     			attr_dev(div5, "class", "stats");
-    			add_location(div5, file$1, 446, 4, 13321);
-    			add_location(h24, file$1, 454, 6, 13827);
-    			add_location(u2, file$1, 455, 41, 13889);
-    			add_location(p6, file$1, 455, 6, 13854);
-    			add_location(u3, file$1, 456, 44, 13970);
-    			add_location(p7, file$1, 456, 6, 13932);
-    			add_location(u4, file$1, 457, 51, 14057);
-    			add_location(p8, file$1, 457, 6, 14012);
-    			add_location(u5, file$1, 458, 51, 14145);
-    			add_location(p9, file$1, 458, 6, 14100);
+    			add_location(div5, file$1, 445, 4, 13308);
+    			add_location(h24, file$1, 453, 6, 13814);
+    			add_location(u2, file$1, 454, 41, 13876);
+    			add_location(p6, file$1, 454, 6, 13841);
+    			add_location(u3, file$1, 455, 44, 13957);
+    			add_location(p7, file$1, 455, 6, 13919);
+    			add_location(u4, file$1, 456, 51, 14044);
+    			add_location(p8, file$1, 456, 6, 13999);
+    			add_location(u5, file$1, 457, 51, 14132);
+    			add_location(p9, file$1, 457, 6, 14087);
     			attr_dev(div6, "class", "crackTimes");
-    			add_location(div6, file$1, 453, 4, 13796);
-    			add_location(h25, file$1, 462, 6, 14228);
-    			add_location(p10, file$1, 463, 6, 14262);
+    			add_location(div6, file$1, 452, 4, 13783);
+    			add_location(h25, file$1, 461, 6, 14215);
+    			add_location(p10, file$1, 462, 6, 14249);
     			attr_dev(button1, "id", "sequences-button");
     			attr_dev(button1, "class", "sequences-button svelte-119nxo0");
-    			add_location(button1, file$1, 464, 6, 14371);
+    			add_location(button1, file$1, 463, 6, 14358);
     			attr_dev(div7, "class", "sequences");
-    			add_location(div7, file$1, 461, 4, 14198);
+    			add_location(div7, file$1, 460, 4, 14185);
     			set_style(button2, "border", "2px solid red");
     			set_style(button2, "color", "red");
     			attr_dev(button2, "class", "go-back svelte-119nxo0");
-    			add_location(button2, file$1, 474, 4, 14724);
-    			add_location(br, file$1, 475, 7, 14830);
-    			add_location(p11, file$1, 475, 4, 14827);
+    			add_location(button2, file$1, 473, 4, 14711);
+    			add_location(br, file$1, 474, 7, 14817);
+    			add_location(p11, file$1, 474, 4, 14814);
     			attr_dev(div8, "class", "password-score");
     			set_style(div8, "display", "none");
-    			add_location(div8, file$1, 406, 2, 12158);
-    			add_location(main, file$1, 353, 0, 10012);
+    			add_location(div8, file$1, 405, 2, 12145);
+    			add_location(main, file$1, 351, 0, 9998);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -3964,14 +3964,12 @@ var app = (function () {
     			sequenceInfo.innerText = "";
 
     			for (const key in item) {
-    				if (key !== "guesses") {
-    					let capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/[_-]/g, " ");
+    				let capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/[_-]/g, " ");
 
-    					if (typeof item[key] === "object" && !Array.isArray(item[key])) ; else {
-    						if (key == "token" || key == "pattern" || key == "i" || key == "j" || key == "guesses_log10" || key == "base_guesses" || key == "separator" || key == "base_matches") ; else {
-    							let formattedItem = item[key].toString().replace(/[_-]/g, " ");
-    							sequenceInfo.innerHTML += "<br>" + capitalizedKey + ": " + formattedItem;
-    						}
+    				if (typeof item[key] === "object" && !Array.isArray(item[key])) ; else {
+    					if (key == "guesses" || key == "token" || key == "pattern" || key == "i" || key == "j" || key == "guesses_log10" || key == "base_guesses" || key == "sequence_space" || key == "separator" || key == "base_matches") ; else {
+    						let formattedItem = item[key].toString().replace(/[_-]/g, " ");
+    						sequenceInfo.innerHTML += "<br>" + capitalizedKey + ": " + formattedItem;
     					}
     				}
     			}
