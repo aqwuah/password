@@ -1,7 +1,6 @@
 <script>
   import zxcvbn from 'zxcvbn';
   import prettyNum, {ROUNDING_MODE} from 'pretty-num';
-  import { createEventDispatcher } from 'svelte';
   import Modal from './Modal.svelte';
 
   let showModal = false;
@@ -104,6 +103,8 @@ function show (elements) {
   }
 }
 
+
+
   function strengthScore() {
     hide(document.querySelectorAll('.password-input'));
     show(document.querySelectorAll('.password-score'));
@@ -123,12 +124,47 @@ function show (elements) {
       const div = document.createElement('div');
       div.className = 'sequencesDiv';
       const sequencePattern = document.createElement('h2');
+      const sequenceToken = document.createElement('p');
       const sequenceInfo = document.createElement('p');
-      sequenceInfo.innerText = JSON.stringify(item, null, 4);
+      sequencePattern.innerText = item.pattern.charAt(0).toUpperCase() + item.pattern.slice(1);
+      sequenceToken.innerHTML = "<strong>" + item.token + "</strong>";
+      sequenceInfo.innerText = ""
+      for (const key in item) {
+        if (key !== "guesses") {
+          let capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/[_-]/g, " ");
+          if (typeof item[key] === "object" && !Array.isArray(item[key])) {
+          } else {
+            if (key == "token" || key == "pattern" || key == "i" || key == "j" || key == "guesses_log10" || key == "base_guesses" || key == "separator" || key == "base_matches") {
+            } else {
+              let formattedItem = item[key].toString().replace(/[_-]/g, " ");
+              sequenceInfo.innerHTML += "<br>" + capitalizedKey + ": " + formattedItem;
+            }
+          }
+        }
+      }
       div.appendChild(sequencePattern);
+      div.appendChild(sequenceToken);
       div.appendChild(sequenceInfo);
       sequencesContainer.appendChild(div);
     });
+  }
+
+  function printAttributes(obj) {
+    for (const key in obj) {
+      if (key !== "guesses") {
+        let capitalizedKey = key.charAt(0).toUpperCase() + key.slice(1);
+        if (typeof obj[key] === "object" && !Array.isArray(obj[key])) {
+          console.log("\n" + capitalizedKey + ": ");
+          printAttributes(obj[key]);
+        } else {
+          if (key.includes("pattern")) {
+            console.log("\n" + capitalizedKey + ": " + obj[key]);
+          } else {
+            console.log(capitalizedKey + ": " + obj[key]);
+          }
+        }
+      }
+    }
   }
 
   function clearModal () {
@@ -148,6 +184,7 @@ function show (elements) {
     show(document.querySelectorAll('.password-input'));
     showPassword = false;
     showModal = false;
+    document.getElementById("sequences-button").style.display = "initial";
   }
 </script>
 
