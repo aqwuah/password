@@ -11,7 +11,8 @@
   let sequences = [];
 
   function easterEgg() {
-    console.log("worked")
+    button = document.getElementById("strength-score-button");
+    button.style.visibility = "hidden";
   }
   
   
@@ -407,7 +408,7 @@ function show (elements) {
       </ul>
     </div>
 
-    <button disabled={strength == null || length == 0}>Strength Score</button>
+    <button id="strength-score-button" disabled={strength == null || length == 0}>Strength Score</button>
 
   </form>
 
