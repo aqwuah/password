@@ -10,7 +10,11 @@
   let suggestions = [];
   let sequences = [];
 
-
+  function easterEgg() {
+    console.log("worked")
+  }
+  
+  
   function validatePassword(e) {
     password = e.target.value;
 
@@ -27,6 +31,10 @@
     sequences.length = 0;
     sequences = result.sequence;
 
+    if (password == "easteregg") {
+      easterEgg()
+    }
+    
     if (warning != "") {
       if (warning.slice(-1) != ".") {
         warning = warning + ".";
