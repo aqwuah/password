@@ -20,7 +20,9 @@ A comprehensive password checker designed with security and flexibility in mind.
 - Hidden inputs and analysis to ensure privacy at all times.
 ## Screenshots
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![Password Input Page](https://github.com/aqwuah/password/assets/103364635/7f2e3278-8582-4c3a-a496-6e4a025ee2e0)
+![Password Simple Breakdown](https://github.com/aqwuah/password/assets/103364635/e4ab0516-0cad-46fb-97f2-2c04995f3d69)
+![Password Detailed Breakdown](https://github.com/aqwuah/password/assets/103364635/71a3efda-113f-467e-b986-d8df116c68dd)
 
 
 ## Security
